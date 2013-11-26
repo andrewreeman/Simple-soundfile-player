@@ -14,7 +14,7 @@
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS     (3)
-#define NUM_CHANNELS    (1)
+#define NUM_CHANNELS    (2)
 #define PI 3.14159265
 
 /* Select sample format. */
@@ -32,56 +32,6 @@ typedef struct
     SAMPLE      *recordedSamples;
 }
 paTestData;
-
-/* This routine will be called by the PortAudio engine when audio is needed.
-** It may be called at interrupt level on some machines so don't do anything
-** that could mess up the system like calling malloc() or free().
-*/
-static int playCallback( const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-                         const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void *userData ){
-
-    /* Inputbuffer is the input from the driver/soundcard. Outbufer is to the output.
-     This callback will write the recorded samples to the outputbuffer in blocks of "framesPerBuffer".
-     In the final block when the number of frames left to be written is less than framesPerBuffer it will write
-     these final frames then perform zero padding for the remaining output frames. */
-
-    paTestData *data = (paTestData*)userData;
-    // This sets the read pointer to the current frame index. Taking into acount the interleaving of channels
-    SAMPLE *rptr = &data->recordedSamples[data->frameIndex * NUM_CHANNELS];
-    SAMPLE *wptr = (SAMPLE*)outputBuffer;
-    unsigned int framesLeft = data->maxFrameIndex - data->frameIndex;
-    int i; // declared here to save multiple declarations
-
-    if( framesLeft > framesPerBuffer )
-    {
-        for( i=0; i<framesPerBuffer; i++ )
-        {
-            // This is inadequate for operations with over 2 channels. An wrapping for loop is prefered
-            *wptr++ = *rptr++;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-        }
-        data->frameIndex += framesPerBuffer;
-        return paContinue;
-    }
-    else
-    {
-        // final run. Write final frames
-        for( i=0; i<framesLeft; i++ )
-        {
-            *wptr++ = *rptr++;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-        }
-        // Then zero pad remaining output frames
-        for(i = framesLeft ; i<framesPerBuffer; i++ )
-        {
-            *wptr++ = 0;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
-        }
-        // This will bring the frameindex to equal maxFrameIndex.
-        data->frameIndex += framesLeft;
-        return paComplete;
-    }
-}
 
 void Pa_Cleanup(PaError err){
     Pa_Terminate();
@@ -110,6 +60,8 @@ int main(void)
     SAMPLE val;
     std::vector<SAMPLE> inputBuffer;
 
+
+
     data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE;
     data.frameIndex = 0;
     numSamples = totalFrames * NUM_CHANNELS;
@@ -121,8 +73,10 @@ int main(void)
     data.recordedSamples = inputBuffer.data();
 
     // Fill the buffer. At the moment this is a sine wave. In the future it will be sound file data.
-    for(int i=0; i<data.maxFrameIndex; ++i){
-        data.recordedSamples[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE);
+    for(int i=0; i<data.maxFrameIndex; i+=NUM_CHANNELS){
+        data.recordedSamples[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
+        data.recordedSamples[i+1] = sin(  1.1 * 440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
+
     }
 
     err = Pa_Initialize();
@@ -132,7 +86,6 @@ int main(void)
     if (outputParameters.device == paNoDevice) {
         fprintf(stderr,"Error: No default output device.\n");
         Pa_Terminate();
-        free(data.recordedSamples);
         return 1;
     }
     outputParameters.channelCount = NUM_CHANNELS;                     /* stereo output */
@@ -142,7 +95,7 @@ int main(void)
 
     // Pass the callback function and address of userdata.
     err = Pa_OpenStream(&stream, NULL, &outputParameters, SAMPLE_RATE,
-              FRAMES_PER_BUFFER, paClipOff, playCallback, &data );
+              FRAMES_PER_BUFFER, paClipOff, NULL, &data );
     if( err != paNoError ){
         Pa_Cleanup(err);
         return 1;
@@ -157,7 +110,23 @@ int main(void)
     printf("Waiting for playback to finish.\n"); fflush(stdout);
 
     // if stream is active then continue streaming.
-    while( ( err = Pa_IsStreamActive( stream ) )) Pa_Sleep(100);
+    //while( ( err = Pa_IsStreamActive( stream ) )) Pa_Sleep(100);
+
+
+    for(int i=0; i<totalFrames/FRAMES_PER_BUFFER; ++i){
+        err = Pa_WriteStream(stream, &data.recordedSamples[i+data.frameIndex], FRAMES_PER_BUFFER);
+        if(err != paNoError){
+            Pa_Cleanup(err);
+            return 1;
+        }
+        data.frameIndex += (FRAMES_PER_BUFFER * NUM_CHANNELS) - 1;
+    }
+    err = Pa_StopStream(stream);
+    if(err != paNoError){
+            Pa_Cleanup(err);
+            return 1;
+    }
+
     if( err != paNoError ){
         Pa_Cleanup(err);
         return 1;
