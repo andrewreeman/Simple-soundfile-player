@@ -1,31 +1,34 @@
+// This uses portaudio to generate a sine wave using the default driver.
+
+//TODO Add comments
+// TODO use vector instead of malloc for arrays.
+//TODO Create a generic driver class that acts as a wrapper around portaudio. But also in the future has the possibility of
+// wrapping other drivers.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sndfile.h>
 #include "portaudio.h"
 #include <cmath>
+#include <vector>
 
-/* #define SAMPLE_RATE  (17932) // Test failure to open with this value. */
 #define SAMPLE_RATE  (44100)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS     (3)
 #define NUM_CHANNELS    (1)
-/* #define DITHER_FLAG     (paDitherOff) */
-#define DITHER_FLAG     (1) /**/
 #define PI 3.14159265
 
-
-
 /* Select sample format. */
-
+/* useful to typedef the sample incase we change it in the future */
 #define PA_SAMPLE_TYPE  paFloat32
 typedef float SAMPLE;
-#define SAMPLE_SILENCE  (0.0f)
-
-
 
 typedef struct
 {
-    int          frameIndex;  /* Index into sample array. */
+    /* The playCallback routine will read from the recorded samples and write to the audio driver.
+    Frame index is the current index into recorded samples.
+    */
+    int          frameIndex;
     int          maxFrameIndex;
     SAMPLE      *recordedSamples;
 }
@@ -35,133 +38,140 @@ paTestData;
 ** It may be called at interrupt level on some machines so don't do anything
 ** that could mess up the system like calling malloc() or free().
 */
-static int playCallback( const void *inputBuffer, void *outputBuffer,
-                         unsigned long framesPerBuffer,
-                         const PaStreamCallbackTimeInfo* timeInfo,
-                         PaStreamCallbackFlags statusFlags,
-                         void *userData )
-{
+static int playCallback( const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+                         const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void *userData ){
+
+    /* Inputbuffer is the input from the driver/soundcard. Outbufer is to the output.
+     This callback will write the recorded samples to the outputbuffer in blocks of "framesPerBuffer".
+     In the final block when the number of frames left to be written is less than framesPerBuffer it will write
+     these final frames then perform zero padding for the remaining output frames. */
+
     paTestData *data = (paTestData*)userData;
+    // This sets the read pointer to the current frame index. Taking into acount the interleaving of channels
     SAMPLE *rptr = &data->recordedSamples[data->frameIndex * NUM_CHANNELS];
     SAMPLE *wptr = (SAMPLE*)outputBuffer;
-    unsigned int i;
-    int finished;
     unsigned int framesLeft = data->maxFrameIndex - data->frameIndex;
+    int i; // declared here to save multiple declarations
 
-    if( framesLeft < framesPerBuffer )
+    if( framesLeft > framesPerBuffer )
     {
-        /* final buffer... */
+        for( i=0; i<framesPerBuffer; i++ )
+        {
+            // This is inadequate for operations with over 2 channels. An wrapping for loop is prefered
+            *wptr++ = *rptr++;  /* left */
+            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
+        }
+        data->frameIndex += framesPerBuffer;
+        return paContinue;
+    }
+    else
+    {
+        // final run. Write final frames
         for( i=0; i<framesLeft; i++ )
         {
             *wptr++ = *rptr++;  /* left */
             if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
         }
-        for( ; i<framesPerBuffer; i++ )
+        // Then zero pad remaining output frames
+        for(i = framesLeft ; i<framesPerBuffer; i++ )
         {
             *wptr++ = 0;  /* left */
             if( NUM_CHANNELS == 2 ) *wptr++ = 0;  /* right */
         }
+        // This will bring the frameindex to equal maxFrameIndex.
         data->frameIndex += framesLeft;
-        finished = paComplete;
+        return paComplete;
     }
-    else
-    {
-        for( i=0; i<framesPerBuffer; i++ )
-        {
-            *wptr++ = *rptr++;  /* left */
-            if( NUM_CHANNELS == 2 ) *wptr++ = *rptr++;  /* right */
-        }
-        data->frameIndex += framesPerBuffer;
-        finished = paContinue;
-    }
-    return finished;
 }
+
+void Pa_Cleanup(PaError err){
+    Pa_Terminate();
+    fprintf( stderr, "An error occured while using the portaudio stream\n" );
+    fprintf( stderr, "Error number: %d\n", err );
+    fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
+}
+
+// wrapper for the audio driver. To be developed with RAII in mind.
+class AudioDriver{
+    private:
+        int m_numChans;
+        int m_sampleRate;
+        int m_blockSize;
+};
 
 int main(void)
 {
-    PaStreamParameters  outputParameters;
-    PaStream*           stream;
-    PaError             err = paNoError;
-    paTestData          data;
-    int                 i;
-    int                 totalFrames;
-    int                 numSamples;
-    int                 numBytes;
-    SAMPLE              val;
+    PaStreamParameters outputParameters;
+    PaStream* stream;
+    PaError err = paNoError;
+    paTestData data;
+    int totalFrames;
+    int numSamples;
+    int numBytes;
+    SAMPLE val;
 
-
-    data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE; /* Record for a few seconds. */
+    data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE;
     data.frameIndex = 0;
     numSamples = totalFrames * NUM_CHANNELS;
     numBytes = numSamples * sizeof(SAMPLE);
-    data.recordedSamples = (SAMPLE *) malloc( numBytes ); /* From now on, recordedSamples is initialised. */
+    // easier to do new?? Or in fact use a vector for cleanup on destruction
+    data.recordedSamples = (SAMPLE *) malloc( numBytes );
 
-
-    for(int i=0; i<totalFrames; ++i){
+    // Fill the buffer. At the moment this is a sine wave. In the future it will be sound file data.
+    for(int i=0; i<data.maxFrameIndex; ++i){
         data.recordedSamples[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE);
     }
-    if( data.recordedSamples == NULL )
-    {
-        printf("Could not allocate record array.\n");
-        goto done;
-    }
-
 
     err = Pa_Initialize();
 
 
-        /* Playback recorded data.  -------------------------------------------- */
-    data.frameIndex = 0;
-
-    outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
+    outputParameters.device = Pa_GetDefaultOutputDevice();
     if (outputParameters.device == paNoDevice) {
         fprintf(stderr,"Error: No default output device.\n");
-        goto done;
+        Pa_Terminate();
+        free(data.recordedSamples);
+        return 1;
     }
-    outputParameters.channelCount = 1;                     /* stereo output */
+    outputParameters.channelCount = NUM_CHANNELS;                     /* stereo output */
     outputParameters.sampleFormat =  PA_SAMPLE_TYPE;
     outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = NULL;
 
-    printf("\n=== Now playing back. ===\n"); fflush(stdout);
-    err = Pa_OpenStream(
-              &stream,
-              NULL, /* no input */
-              &outputParameters,
-              SAMPLE_RATE,
-              FRAMES_PER_BUFFER,
-              paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-              playCallback,
-              &data );
-    if( err != paNoError ) goto done;
-
-    if( stream )
-    {
-        err = Pa_StartStream( stream );
-        if( err != paNoError ) goto done;
-
-        printf("Waiting for playback to finish.\n"); fflush(stdout);
-
-        while( ( err = Pa_IsStreamActive( stream ) ) == 1 ) Pa_Sleep(100);
-        if( err < 0 ) goto done;
-
-        err = Pa_CloseStream( stream );
-        if( err != paNoError ) goto done;
-
-        printf("Done.\n"); fflush(stdout);
+    // Pass the callback function and address of userdata.
+    err = Pa_OpenStream(&stream, NULL, &outputParameters, SAMPLE_RATE,
+              FRAMES_PER_BUFFER, paClipOff, playCallback, &data );
+    if( err != paNoError ){
+        Pa_Cleanup(err);
+        free(data.recordedSamples);
+        return 1;
     }
 
-done:
-    Pa_Terminate();
-    if( data.recordedSamples )       /* Sure it is NULL or valid. */
-        free( data.recordedSamples );
-    if( err != paNoError )
-    {
-        fprintf( stderr, "An error occured while using the portaudio stream\n" );
-        fprintf( stderr, "Error number: %d\n", err );
-        fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
-        err = 1;          /* Always return 0 or 1, but no other return codes. */
+    err = Pa_StartStream( stream );
+    if( err != paNoError ){
+        Pa_Cleanup(err);
+        free(data.recordedSamples);
+        return 1;
     }
-    return err;
+
+    printf("Waiting for playback to finish.\n"); fflush(stdout);
+
+    // if stream is active then continue streaming.
+    while( ( err = Pa_IsStreamActive( stream ) )) Pa_Sleep(100);
+    if( err != paNoError ){
+        Pa_Cleanup(err);
+        free(data.recordedSamples);
+        return 1;
+    }
+
+    err = Pa_CloseStream( stream );
+    if( err != paNoError ){
+        Pa_Cleanup(err);
+        free(data.recordedSamples);
+        return 1;
+    }
+
+    printf("Done.\n"); fflush(stdout);
+
+    return 0;
 }
 
