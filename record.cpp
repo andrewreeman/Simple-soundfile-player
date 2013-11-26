@@ -1,6 +1,5 @@
 // This uses portaudio to generate a sine wave using the default driver.
 
-//TODO Add comments
 // TODO use vector instead of malloc for arrays.
 //TODO Create a generic driver class that acts as a wrapper around portaudio. But also in the future has the possibility of
 // wrapping other drivers.
@@ -109,13 +108,17 @@ int main(void)
     int numSamples;
     int numBytes;
     SAMPLE val;
+    std::vector<SAMPLE> inputBuffer;
 
     data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE;
     data.frameIndex = 0;
     numSamples = totalFrames * NUM_CHANNELS;
-    numBytes = numSamples * sizeof(SAMPLE);
-    // easier to do new?? Or in fact use a vector for cleanup on destruction
-    data.recordedSamples = (SAMPLE *) malloc( numBytes );
+    inputBuffer.resize(numSamples, 0.f);
+
+    /* Data returns a pointer to the internal array. This should only be used if the vector is not later modified
+    leading to the address changing.
+    */
+    data.recordedSamples = inputBuffer.data();
 
     // Fill the buffer. At the moment this is a sine wave. In the future it will be sound file data.
     for(int i=0; i<data.maxFrameIndex; ++i){
@@ -142,14 +145,12 @@ int main(void)
               FRAMES_PER_BUFFER, paClipOff, playCallback, &data );
     if( err != paNoError ){
         Pa_Cleanup(err);
-        free(data.recordedSamples);
         return 1;
     }
 
     err = Pa_StartStream( stream );
     if( err != paNoError ){
         Pa_Cleanup(err);
-        free(data.recordedSamples);
         return 1;
     }
 
@@ -159,14 +160,12 @@ int main(void)
     while( ( err = Pa_IsStreamActive( stream ) )) Pa_Sleep(100);
     if( err != paNoError ){
         Pa_Cleanup(err);
-        free(data.recordedSamples);
         return 1;
     }
 
     err = Pa_CloseStream( stream );
     if( err != paNoError ){
         Pa_Cleanup(err);
-        free(data.recordedSamples);
         return 1;
     }
 
