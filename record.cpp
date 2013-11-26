@@ -46,6 +46,25 @@ class AudioDriver{
         int m_numChans;
         int m_sampleRate;
         int m_blockSize;
+    public:
+        AudioDriver(int chans, int sRate, int blockSize);
+        ~AudioDriver();
+
+        void write(SAMPLE* input);
+        void read(SAMPLE* output);
+
+        void setChans(int chans);
+        int getChans();
+
+        void setSampleRate(int sampleRate);
+        int getSampleRate();
+
+        void setBlockSize(int blockSize);
+        int getBlockSize();
+
+
+
+
 };
 
 int main(void)
