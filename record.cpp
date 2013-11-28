@@ -20,7 +20,7 @@ This will play two sine waves at two different frequencies. One for the left cha
 #define SAMPLE_RATE (44100)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS (3)
-#define NUM_CHANNELS (1)
+#define NUM_CHANNELS (2)
 #define PI 3.14159265
 
 void interleave(std::vector< std::vector<SAMPLE>* > inBuffers, std::vector<SAMPLE> &interleavedBuffer, int numChans){
@@ -51,50 +51,24 @@ void interleave(std::vector< std::vector<SAMPLE>* > inBuffers, std::vector<SAMPL
 
 int main(void)
 {
-
-
-        int totalFrames = SAMPLE_RATE * NUM_SECONDS;
-        int inputBufferSize = totalFrames;
-        int interleavedBufferSize = totalFrames * NUM_CHANNELS;
-        int blockSize = FRAMES_PER_BUFFER * NUM_CHANNELS;
-
-        SF_INFO inFile_Inf;
-        SNDFILE* inFile;
-
-        std::vector<SAMPLE> inputBufferL;
-        std::vector<SAMPLE> inputBufferR;
-        std::vector<SAMPLE> inputBuffer_Interleaved;
-        std::vector< std::vector<SAMPLE>* > v_inputBuffers(NUM_CHANNELS);
-
         // I need to make this a singleton class as multiple instances of AudioIO is not desired.
         try{
+            SF_INFO inFile_Inf;
+            SNDFILE* inFile;
             AudioIO outputDevice(NUM_CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER, "outputDevice");
+            inFile = sf_open("media/stereo.wav", SFM_READ, &inFile_Inf);
+            int blockSize = FRAMES_PER_BUFFER * inFile_Inf.channels;
+            int interleavedBufferSize = inFile_Inf.frames * inFile_Inf.channels;
+            std::vector<SAMPLE> inputBuffer_Interleaved(interleavedBufferSize);
 
-            inFile = sf_open("media/test.wav", SFM_READ, &inFile_Inf);
-            std::vector<SAMPLE> sfBuffer(inFile_Inf.frames);
-            interleavedBufferSize = inFile_Inf.frames * inFile_Inf.channels;
-            inputBufferSize = inFile_Inf.frames;
+            sf_readf_float(inFile, inputBuffer_Interleaved.data(), interleavedBufferSize);
 
-            inputBufferL.resize(inputBufferSize, 0.f);
-            inputBufferR.resize(inputBufferSize, 0.f);
-            inputBuffer_Interleaved.resize(interleavedBufferSize, 0.f);
-
-            // At the moment I am manually declaring the buffers. This needs to be modified to support multichannel.
-            // The buffers should be declared as a vector of vector pointers from the start!
-            v_inputBuffers[0] = &inputBufferL;
-            v_inputBuffers[1] = &inputBufferR;
-
-
-
-
-            sf_readf_float(inFile, inputBufferL.data(), inputBufferSize);
-
-            interleave(v_inputBuffers, inputBuffer_Interleaved, NUM_CHANNELS);
+            //interleave(v_inputBuffers, inputBuffer_Interleaved, NUM_CHANNELS);
             // Audio is not prepared to be written to the soundcard
 
             outputDevice.start();
 
-            for(int i=0; i<interleavedBufferSize; i+= blockSize){
+            for(int i=0; i<interleavedBufferSize; i+= blockSize ){
                 outputDevice.write(&inputBuffer_Interleaved[i]);
             }
 
