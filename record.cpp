@@ -47,6 +47,8 @@ void interleave(std::vector< std::vector<SAMPLE>* > inBuffers, std::vector<SAMPL
     }
 }
 
+
+
 int main(void)
 {
 
@@ -68,6 +70,11 @@ int main(void)
         try{
             AudioIO outputDevice(NUM_CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER, "outputDevice");
 
+            inFile = sf_open("media/test.wav", SFM_READ, &inFile_Inf);
+            std::vector<SAMPLE> sfBuffer(inFile_Inf.frames);
+            interleavedBufferSize = inFile_Inf.frames * inFile_Inf.channels;
+            inputBufferSize = inFile_Inf.frames;
+
             inputBufferL.resize(inputBufferSize, 0.f);
             inputBufferR.resize(inputBufferSize, 0.f);
             inputBuffer_Interleaved.resize(interleavedBufferSize, 0.f);
@@ -77,26 +84,18 @@ int main(void)
             v_inputBuffers[0] = &inputBufferL;
             v_inputBuffers[1] = &inputBufferR;
 
-            // Fill buffers
-            for(int i=0; i<inputBufferSize; ++i){
-                inputBufferL[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
-            }
-            for(int i=0; i<inputBufferSize; ++i){
-                inputBufferR[i] = sin(  1.5 * 440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
-            }
 
-            inFile = sf_open("media/test.wav", SFM_READ, &inFile_Inf);
-            std::vector<SAMPLE> sfBuffer(inFile_Inf.frames);
 
-            sf_readf_float(inFile, sfBuffer.data(), sfBuffer.size());
+
+            sf_readf_float(inFile, inputBufferL.data(), inputBufferSize);
 
             interleave(v_inputBuffers, inputBuffer_Interleaved, NUM_CHANNELS);
             // Audio is not prepared to be written to the soundcard
 
             outputDevice.start();
 
-            for(int i=0; i<sfBuffer.size(); i+= blockSize){
-                outputDevice.write(&sfBuffer[i]);
+            for(int i=0; i<interleavedBufferSize; i+= blockSize){
+                outputDevice.write(&inputBuffer_Interleaved[i]);
             }
 
             outputDevice.stop();
