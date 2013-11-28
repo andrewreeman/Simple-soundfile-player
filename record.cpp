@@ -4,6 +4,8 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 This will play two sine waves at two different frequencies. One for the left channel and another for the right.
 */
 
+// TODO better exception handling. Custom exception for PA failure. And sound file failure.
+
 #include <sndfile.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +20,7 @@ This will play two sine waves at two different frequencies. One for the left cha
 #define SAMPLE_RATE (44100)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS (3)
-#define NUM_CHANNELS (2)
+#define NUM_CHANNELS (1)
 #define PI 3.14159265
 
 void interleave(std::vector< std::vector<SAMPLE>* > inBuffers, std::vector<SAMPLE> &interleavedBuffer, int numChans){
@@ -47,11 +49,15 @@ void interleave(std::vector< std::vector<SAMPLE>* > inBuffers, std::vector<SAMPL
 
 int main(void)
 {
-    try{
+
+
         int totalFrames = SAMPLE_RATE * NUM_SECONDS;
         int inputBufferSize = totalFrames;
         int interleavedBufferSize = totalFrames * NUM_CHANNELS;
         int blockSize = FRAMES_PER_BUFFER * NUM_CHANNELS;
+
+        SF_INFO inFile_Inf;
+        SNDFILE* inFile;
 
         std::vector<SAMPLE> inputBufferL;
         std::vector<SAMPLE> inputBufferR;
@@ -59,39 +65,57 @@ int main(void)
         std::vector< std::vector<SAMPLE>* > v_inputBuffers(NUM_CHANNELS);
 
         // I need to make this a singleton class as multiple instances of AudioIO is not desired.
-        AudioIO outputDevice(NUM_CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER, "outputDevice");
+        try{
+            AudioIO outputDevice(NUM_CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER, "outputDevice");
 
-        inputBufferL.resize(inputBufferSize, 0.f);
-        inputBufferR.resize(inputBufferSize, 0.f);
-        inputBuffer_Interleaved.resize(interleavedBufferSize, 0.f);
+            inputBufferL.resize(inputBufferSize, 0.f);
+            inputBufferR.resize(inputBufferSize, 0.f);
+            inputBuffer_Interleaved.resize(interleavedBufferSize, 0.f);
 
-        // At the moment I am manually declaring the buffers. This needs to be modified to support multichannel.
-        // The buffers should be declared as a vector of vector pointers from the start!
-        v_inputBuffers[0] = &inputBufferL;
-        v_inputBuffers[1] = &inputBufferR;
+            // At the moment I am manually declaring the buffers. This needs to be modified to support multichannel.
+            // The buffers should be declared as a vector of vector pointers from the start!
+            v_inputBuffers[0] = &inputBufferL;
+            v_inputBuffers[1] = &inputBufferR;
 
-        // Fill buffers
-        for(int i=0; i<inputBufferSize; ++i){
-            inputBufferL[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
-        }
-        for(int i=0; i<inputBufferSize; ++i){
-            inputBufferR[i] = sin(  1.5 * 440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
-        }
+            // Fill buffers
+            for(int i=0; i<inputBufferSize; ++i){
+                inputBufferL[i] = sin(  440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
+            }
+            for(int i=0; i<inputBufferSize; ++i){
+                inputBufferR[i] = sin(  1.5 * 440.f * PI * 2.f * (float)i / (float)SAMPLE_RATE) * 0.3;
+            }
 
-        interleave(v_inputBuffers, inputBuffer_Interleaved, NUM_CHANNELS);
-        // Audio is not prepared to be written to the soundcard
+            inFile = sf_open("media/test.wav", SFM_READ, &inFile_Inf);
+            std::vector<SAMPLE> sfBuffer(inFile_Inf.frames);
 
-        outputDevice.start();
-        for(int i=0; i<inputBuffer_Interleaved.size(); i+= blockSize){
-            outputDevice.write(&inputBuffer_Interleaved[i]);
-        }
-        outputDevice.stop();
+            sf_readf_float(inFile, sfBuffer.data(), sfBuffer.size());
 
-        return 0;
+            interleave(v_inputBuffers, inputBuffer_Interleaved, NUM_CHANNELS);
+            // Audio is not prepared to be written to the soundcard
+
+            outputDevice.start();
+
+            for(int i=0; i<sfBuffer.size(); i+= blockSize){
+                outputDevice.write(&sfBuffer[i]);
+            }
+
+            outputDevice.stop();
+
+            sf_close(inFile);
+            return 0;
     }
-    catch(std::exception e){
+    catch(Pa_Exception paEx){
+        std::cout << paEx.what() << std::endl;
+        return 1;
+    }
+    catch(sndFile_Exception sndEx){
+        std::cout << sndEx.what() << std::endl;
+        return 1;
+    }
+    catch(...){
         // Instead of a standard exception I should throw a custom portaudio exception. Cleanup should not happen inside the AudioIO class.
         // It should be handled inside this catch.
+        // Will not stop soundfile as soundfile does not exist in this scope
         std::cout << "Exception occurred" <<std::endl;
         return 1;
     }
