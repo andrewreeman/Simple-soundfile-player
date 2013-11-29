@@ -1,13 +1,11 @@
-all: processAudio record
-record: record.o 
-	g++ -o record record.o AudioIO.o libportaudio.a -lsndfile -lrt -lasound -ljack -lpthread
-record.o: record.cpp AudioIO.cpp
-	g++ -c AudioIO.cpp
-	g++ -c record.cpp
-processAudio: processAudio.o
-	g++ -o processAudio processAudio.o -lsndfile
-processAudio.o: processAudio.cpp
-	g++ -c processAudio.cpp
+all: main
+main: main.o 
+	g++ -o playSoundFile main.o AudioIO.o ioUtils.o libs/libportaudio.a -lsndfile -lrt -lasound -ljack -lpthread
+	rm -rf *.o
+main.o: src/main.cpp src/AudioIO.cpp src/ioUtils.cpp
+	g++ -c src/ioUtils.cpp
+	g++ -c src/AudioIO.cpp
+	g++ -c src/main.cpp
 clean: 
-	rm -rf *.o record processAudio 
+	rm -rf *.o record *~
 	

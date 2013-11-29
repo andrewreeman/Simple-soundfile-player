@@ -11,12 +11,8 @@ Wrapper for the audio IO method used.
 #include "portaudio.h"
 #include "exceptions.hh"
 
-
-/* Select sample format. */
-/* useful to typedef the sample incase we change it in the future */
 #define PA_SAMPLE_TYPE  paFloat32
 typedef float SAMPLE;
-
 
 class AudioIO{
     private:
