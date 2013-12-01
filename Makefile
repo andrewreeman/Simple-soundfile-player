@@ -1,17 +1,20 @@
 CC=g++
 CFLAGS = -Wall
-objects = main.o AudioIO.o ioUtils.o
+objects = src/main.o src/AudioIO.o src/ioUtils.o
 
 all: main
+
 main: $(objects)
 	$(CC) -o playSoundFile $(objects) libs/libportaudio.a -lsndfile -lrt -lasound -ljack -lpthread
 	rm -rf *.o
-main.o: src/main.cpp src/AudioIO.cpp src/ioUtils.cpp
-	$(CC) -c src/ioUtils.cpp
-	$(CC) -c src/AudioIO.cpp
-	$(CC) -c src/main.cpp
+
+$(objects): src/ioUtils.cpp
+
+# using implicit rules
+main.o AudioIO.o: src/AudioIO.cpp 
 
 .PHONY: clean
+
 clean: 
-	rm -rf *.o playSoundFile *~
+	rm -rf $(objects) playSoundFile *~ src/*~
 	
