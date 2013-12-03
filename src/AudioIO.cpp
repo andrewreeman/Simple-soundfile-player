@@ -1,4 +1,4 @@
-#include "AudioIO.hh"
+#include "../include/AudioIO.hh"
 
 
 AudioIO::AudioIO(int chans, int sRate, int frameSize, std::string driver)

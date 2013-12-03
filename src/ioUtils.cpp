@@ -1,4 +1,4 @@
-#include "ioUtils.hh"
+#include "../include/ioUtils.hh"
 
 void interleave(std::vector< std::vector<float>* > inBuffers, std::vector<float> &interleavedBuffer, int numChans){
     //PortAudio expects interleaved audio. This will take a vector of buffers for each channel and interleave them into the output buffer.

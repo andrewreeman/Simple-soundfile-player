@@ -15,9 +15,9 @@ This will play two sine waves at two different frequencies. One for the left cha
 #include <string>
 #include <iostream>
 
-#include "portaudio.h"
-#include "AudioIO.hh"
-#include "ioUtils.hh"
+#include "../include/portaudio.h"
+#include "../include/AudioIO.hh"
+#include "../include/ioUtils.hh"
 
 #define FRAMES_PER_BUFFER (512)
 #define PI 3.14159265

@@ -1,20 +1,24 @@
 CC=g++
 CFLAGS = -Wall
-objects = src/main.o src/AudioIO.o src/ioUtils.o
+OBJDIR = src
+OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o)
+INCDIR = include
+LIBDIR = libs
+LIBS = $(addprefix $(LIBDIR)/, libportaudio.a) -lsndfile -lrt -lasound -ljack -lpthread
 
 all: main
 
-main: $(objects)
-	$(CC) -o playSoundFile $(objects) libs/libportaudio.a -lsndfile -lrt -lasound -ljack -lpthread
+main: $(OBJECTS)
+	$(CC) -o playSoundFile $(OBJECTS) $(LIBS)
 	rm -rf *.o
 
-$(objects): src/ioUtils.cpp
+$(objects): $(INCDIR)/ioUtils.hh
 
 # using implicit rules
-main.o AudioIO.o: src/AudioIO.cpp 
+main.o AudioIO.o: $(INCDIR)/AudioIO.hh
 
 .PHONY: clean
 
 clean: 
-	rm -rf $(objects) playSoundFile *~ src/*~
+	rm -rf $(OBJECTS) playSoundFile *~ $(OBJDIR)/*~ $(INCDIR)/*~
 	
