@@ -7,4 +7,6 @@ Developing a simple sound file player. Exploring various audio drivers, audio fi
 -- GUI
 -- Selecting drivers in PA
 -- Windows compile
+	- Need make to determine OS
+
 -- Better Makefile
