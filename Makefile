@@ -2,7 +2,7 @@ SYS := $(shell uname)
 CC=g++
 CFLAGS = -Wall
 OBJDIR = src
-OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o)
+OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o SoundFile.o)
 INCDIR = include
 LIBDIR = libs
 ifeq ($(SYS), Linux)
