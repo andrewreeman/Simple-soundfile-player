@@ -1,5 +1,8 @@
 /*
-Wrapper for the audio IO method used.
+    Wrapper for the audio IO method used. This should eventually be a singleton and
+    provide various methods for AudioIO instead of just portaudio.
+    The playing of a soundfile should be a method used in the SoundFile class.
+    The SoundFile class will be passed a pointer to the AudioIO object.
 */
 
 #ifndef __AudioIO__
@@ -10,6 +13,7 @@ Wrapper for the audio IO method used.
 #include <iostream>
 #include "portaudio.h"
 #include "exceptions.hh"
+#include "ioUtils.hh"
 
 #define PA_SAMPLE_TYPE  paFloat32
 typedef float SAMPLE;
@@ -18,12 +22,12 @@ class AudioIO{
     private:
         int m_numChans;
         int m_sampleRate;
-        int m_frameSize;
+        int m_frameSize; // The block size will be frameSize * numChans
         std::string m_DriverName;
         PaStreamParameters m_PaParams;
         PaStream* m_Stream;
 
-    void Pa_Cleanup(PaError err);
+    void Pa_ErrorOccurred(PaError err);
 
     public:
         AudioIO(int chans, int sRate, int frameSize, std::string driver);

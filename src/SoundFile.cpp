@@ -1,3 +1,5 @@
+// This will later be extended into a soundfile class that is passed a pointer to the AudioIO object.
+
 #include "../include/SoundFile.hh"
 
 void playSoundFile(const char* soundfile){
@@ -23,9 +25,7 @@ void playSoundFile(const char* soundfile){
 }
 
 void playSine(){
-    /* Uses sndfile to open a sound file and read into a buffer.
-    Then uses portaudio to play this file.
-    */
+    // For testing.
     int numChans = 1;
     int sampleRate = 44100;
     int duration = 3;

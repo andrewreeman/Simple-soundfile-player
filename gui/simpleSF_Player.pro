@@ -36,18 +36,17 @@ DEPENDPATH += $$PWD/../libs
 unix: PRE_TARGETDEPS += $$PWD/../libs/libportaudio.a
 
 
-#unix:!macx|win32: LIBS += -L$$PWD/../libs/ -llibsndfile-1
+win32: LIBS += -L$$PWD/../libs/ -llibsndfile-1
 
 INCLUDEPATH += $$PWD/../libs
 DEPENDPATH += $$PWD/../libs
 
 win32: PRE_TARGETDEPS += $$PWD/../libs/libsndfile-1.lib
-#else:unix:!macx: PRE_TARGETDEPS += $$PWD/../libs/liblibsndfile.a
 
-#unix:!macx|win32: LIBS += -L$$PWD/../libs/ -lportaudio_x86
+
+win32: LIBS += -L$$PWD/../libs/ -lportaudio_x86
 
 INCLUDEPATH += $$PWD/../libs
 DEPENDPATH += $$PWD/../libs
 
 win32: PRE_TARGETDEPS += $$PWD/../libs/portaudio_x86.lib
-#else:unix:!macx: PRE_TARGETDEPS += $$PWD/../libs/libportaudio_x86.a

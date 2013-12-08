@@ -1,3 +1,6 @@
+// The main gui window. MOC is run on the q_object files to expand the Q_OBJECT macro's.
+
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -11,6 +14,8 @@ class MainWindow;
 
 class MainWindow : public QMainWindow
 {
+    /* Must add this for MOC (Meta-Object Compiler) to make this a Q_Object.
+    Among other things this allows the signal and slot mechanism to work. */
     Q_OBJECT
     
 public:
@@ -18,6 +23,7 @@ public:
     ~MainWindow();
     
 private slots:
+    // A slot is basically a subscriber. A signal is a publisher.
     void on_pushButton_clicked();
 
 private:

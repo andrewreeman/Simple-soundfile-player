@@ -15,7 +15,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-    //playSoundFile("E:/Software/Projects/simpleSF_Player/gui/Debug/release/media/test.wav");
+
+    //playSoundFile("E:/Software/Projects/simpleSF_Player/media/test.wav");
     playSoundFile("media/test.wav");
     //playSine();
 
