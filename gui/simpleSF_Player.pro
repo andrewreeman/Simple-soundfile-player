@@ -24,7 +24,8 @@ HEADERS  += mainwindow.h \
     ../include/ioUtils.hh \
     ../include/exceptions.hh \
     ../include/AudioIO.hh \
-    ../include/sndfile.h
+    ../include/sndfile.h \
+    ../include/sndfile.hh
 
 FORMS    += mainwindow.ui
 

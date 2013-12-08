@@ -2,6 +2,7 @@
 
 #include "../include/SoundFile.hh"
 
+
 void playSoundFile(const char* soundfile){
     /* Uses sndfile to open a sound file and read into a buffer.
     Then uses portaudio to play this file.

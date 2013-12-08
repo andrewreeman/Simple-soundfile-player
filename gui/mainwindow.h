@@ -6,6 +6,10 @@
 
 #include "../include/SoundFile.hh"
 
+//#ifndef NDEBUG
+    #include <iostream>
+//#endif
+
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QDir>

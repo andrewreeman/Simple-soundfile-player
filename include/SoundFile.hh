@@ -8,19 +8,18 @@
 #define SOUNDFILE_H
 
 #ifdef _WIN32
-    #include "sndfile.h"
+    #include "sndfile.hh"
 #else
-    #include <sndfile.h>
+    #include <sndfile.hh>
 #endif
+
 #include "AudioIO.hh"
 #include <vector>
 #include <math.h>
+#include <string>
 
 #define FRAMES_PER_BUFFER (512)
 #define TWO_PI 6.28315
-
-
-
 
 void playSoundFile(const char* soundfile);
 

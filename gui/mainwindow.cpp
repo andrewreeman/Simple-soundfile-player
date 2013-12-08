@@ -15,16 +15,24 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
-
-    //playSoundFile("E:/Software/Projects/simpleSF_Player/media/test.wav");
+    // Eventually to a C string!
     playSoundFile(m_filePath.toStdString().c_str());
-    //playSine();
-
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-    // update to filter audio files
-    m_filePath = QFileDialog::getOpenFileName(this, tr("Open audio file"), QDir::currentPath(), "Any(*)");
+    QString filter = tr(
+        "Audio (*.aiff *.au *.avr *.caf *.flac *.htk *.iff *.mat *.mpc *.oga *.paf *.pvf *.rf64 *.sf *.voc *.w64 *.wav *.wavex *.wve *xi) "
+    );
+    QFileDialog dialog(this); // who the daddy?
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setDirectory(QDir::currentPath());
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setViewMode(QFileDialog::Detail);
+
+    // expand this
+    dialog.setNameFilter(filter);
+    if(dialog.exec())
+        m_filePath = (dialog.selectedFiles()).at(0);
 
 }
