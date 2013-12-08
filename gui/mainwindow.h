@@ -7,6 +7,8 @@
 #include "../include/SoundFile.hh"
 
 #include <QMainWindow>
+#include <QFileDialog>
+#include <QDir>
 
 namespace Ui {
 class MainWindow;
@@ -26,8 +28,13 @@ private slots:
     // A slot is basically a subscriber. A signal is a publisher.
     void on_pushButton_clicked();
 
+    void on_actionOpen_triggered();
+
 private:
     Ui::MainWindow *ui;
+
+    QString m_filePath;
+
 };
 
 #endif // MAINWINDOW_H
