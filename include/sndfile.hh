@@ -52,7 +52,12 @@
 #ifndef SNDFILE_HH
 #define SNDFILE_HH
 
-#include <sndfile.h>
+#ifdef _WIN32
+    #include "sndfile.h"
+#else
+    #include <sndfile.h>
+
+#endif
 
 #include <string>
 #include <new> // for std::nothrow

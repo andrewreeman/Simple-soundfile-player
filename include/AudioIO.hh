@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#include <vector>
 #include "portaudio.h"
 #include "exceptions.hh"
 #include "ioUtils.hh"
@@ -23,14 +24,14 @@ class AudioIO{
         int m_numChans;
         int m_sampleRate;
         int m_frameSize; // The block size will be frameSize * numChans
-        std::string m_DriverName;
+        std::string m_DeviceName;
         PaStreamParameters m_PaParams;
         PaStream* m_Stream;
 
     void Pa_ErrorOccurred(PaError err);
 
     public:
-        AudioIO(int chans, int sRate, int frameSize, std::string driver);
+        AudioIO(int chans, int sRate, int frameSize, std::string device);
         ~AudioIO();
 
         void write(SAMPLE* input);
@@ -45,9 +46,11 @@ class AudioIO{
         void setFrameSize(int frameSize);
         int getFrameSize();
 
-        void setDriver(std::string);
+        void setDevice(std::string);
         //void setDriver(int driver);
-        std::string getDriver();
+        std::string getDevice();
+
+		std::vector<std::string> getAvailableDevices();
 
         void start();
         void stop();

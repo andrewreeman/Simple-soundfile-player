@@ -1,8 +1,8 @@
 #include "../include/AudioIO.hh"
 
 
-AudioIO::AudioIO(int chans, int sRate, int frameSize, std::string driver)
-    :m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize), m_DriverName(driver){
+AudioIO::AudioIO(int chans, int sRate, int frameSize, std::string device)
+    :m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize), m_DeviceName(device){
 
     // Initialize and open device
     Pa_Initialize();

@@ -8,6 +8,7 @@
 #define SOUNDFILE_H
 
 #ifdef _WIN32
+    #include "sndfile.h"
     #include "sndfile.hh"
 #else
     #include <sndfile.hh>
