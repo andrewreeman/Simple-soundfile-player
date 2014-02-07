@@ -6,7 +6,10 @@ AudioIO::AudioIO(int chans, int sRate, int frameSize, std::string device)
 
     // Initialize and open device
     Pa_Initialize();
+    fillHostApis();
     m_PaParams.device = Pa_GetDefaultOutputDevice();
+    //m_PaParams.device = Pa_HostApiDeviceIndexToDeviceIndex(0, 3);
+
     if (m_PaParams.device == paNoDevice) {
         fprintf(stderr,"Error: No default output device.\n");
         Pa_Terminate();
@@ -30,6 +33,30 @@ AudioIO::~AudioIO(){
     if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
     Pa_Terminate();
 }
+
+void AudioIO::fillHostApis(){
+        PaHostApiIndex apiCount = Pa_GetHostApiCount();
+        PaDeviceIndex devCount = 0;
+        PaDeviceIndex devNum = 0;
+        std::vector<std::string> devs;
+        const PaHostApiInfo* p_ApiInf;
+        const PaDeviceInfo* p_DevInf;
+        m_vApiInf.resize(apiCount);
+
+        for(int api=0; api<apiCount; ++api){
+            p_ApiInf = Pa_GetHostApiInfo(api);
+            m_vApiInf[api].apiName = p_ApiInf->name;
+            devCount = p_ApiInf->deviceCount;
+            devs.resize(devCount);
+            for(int dev=0; dev<devCount; ++dev){
+                devNum = Pa_HostApiDeviceIndexToDeviceIndex(api, dev);
+                p_DevInf = Pa_GetDeviceInfo(devNum);
+                devs[dev] = p_DevInf->name;
+                m_vApiInf[api].devices = devs;
+            }
+        }
+}
+
 void AudioIO::Pa_ErrorOccurred(PaError err){
         if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
         fprintf( stderr, "An error occured while using the portaudio stream\n" );

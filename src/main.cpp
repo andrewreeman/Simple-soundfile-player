@@ -22,11 +22,39 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 
 #define PI 3.14159265
 
+
+void displayDrivers(){
+    // Will display available audio APIs and the devices they provide access to.
+    AudioIO tempDevice(1, 44100, 512, "outputDevice");
+    std::vector<ApiInfo> v_apiInfo = tempDevice.getHostApis();
+
+    for(int api=0; api<v_apiInfo.size(); ++api){
+        std::cout << "Api " << api << " : " << v_apiInfo[api].apiName << std::endl;
+        std::vector<std::string> devices = v_apiInfo[api].devices;
+        for(int dev=0; dev<devices.size(); ++dev){
+            std::cout << "\t Device " << dev << " : " << devices[dev] << std::endl;
+        }
+    }
+}
+
+
 int main(void)
 {
-        // I need to make this a singleton class as multiple instances of AudioIO is not desired.
+        // I need to make this a singleton class as multiple instances of AudioIO are not desired.
+
+    /* If option == display drivers then
+        * displayDrivers()
+        * return 0
+     *
+     *If option == [driver] [driverNumber]
+        * playSoundFile("...", driverNumber)
+      cont...
+
+     */
+
     try{
-        playSoundFile("media/test.wav");
+        displayDrivers();
+        //playSoundFile("media/test.wav");
         return 0;
     }
     catch(Pa_Exception paEx){
