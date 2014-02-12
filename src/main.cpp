@@ -25,7 +25,7 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 
 void displayDrivers(){
     // Will display available audio APIs and the devices they provide access to.
-    AudioIO tempDevice(1, 44100, 512, "outputDevice");
+    PA_AudioIO tempDevice(1, 44100, 512);
     std::vector<ApiInfo> v_apiInfo = tempDevice.getHostApis();
 
     for(int api=0; api<v_apiInfo.size(); ++api){
@@ -40,7 +40,7 @@ void displayDrivers(){
 
 int main(void)
 {
-        // I need to make this a singleton class as multiple instances of AudioIO are not desired.
+
 
     /* If option == display drivers then
         * displayDrivers()

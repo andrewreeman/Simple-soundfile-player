@@ -77,7 +77,7 @@ class SndfileHandle
 
 	public :
 			/* Default constructor */
-			SndfileHandle (void) : p (NULL) {} ;
+            SndfileHandle (void) : p (NULL) {} ;
 			SndfileHandle (const char *path, int mode = SFM_READ,
 							int format = 0, int channels = 0, int samplerate = 0) ;
 			SndfileHandle (std::string const & path, int mode = SFM_READ,

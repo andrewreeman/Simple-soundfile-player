@@ -13,7 +13,7 @@ void playSoundFile(const char* soundfile){
     int blockSize = FRAMES_PER_BUFFER * inFile_Inf.channels;
     int interleavedBufferSize = inFile_Inf.frames * inFile_Inf.channels;
     std::vector<SAMPLE> inputBuffer_Interleaved(interleavedBufferSize + blockSize); // add one block so we don't go over
-    AudioIO outputDevice(inFile_Inf.channels, inFile_Inf.samplerate, FRAMES_PER_BUFFER, "outputDevice");
+    PA_AudioIO outputDevice(inFile_Inf.channels, inFile_Inf.samplerate, FRAMES_PER_BUFFER);
 
     sf_readf_float(inFile, inputBuffer_Interleaved.data(), interleavedBufferSize);
     outputDevice.start();
@@ -34,7 +34,7 @@ void playSine(){
     int blockSize = FRAMES_PER_BUFFER * numChans;
     int interleavedBufferSize = numSamps * numChans;
     std::vector<SAMPLE> inputBuffer_Interleaved(interleavedBufferSize);
-    AudioIO outputDevice(numChans, sampleRate, FRAMES_PER_BUFFER, "outputDevice");
+    PA_AudioIO outputDevice(numChans, sampleRate, FRAMES_PER_BUFFER);
 
 
     for(int i=0; i<interleavedBufferSize; ++i){

@@ -3,7 +3,9 @@ CC=g++
 CFLAGS = -Wall
 OBJDIR = src
 OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o SoundFile.o)
+SOURCES = $(addprefix $(OBJDIR)/, main.cpp AudioIO.cpp ioUtils.cpp SoundFile.cpp)
 INCDIR = include
+DEPS = $(addprefix $(INCDIR)/, AudioIO.hh ioUtils.hh exceptions.hh portaudio.h sndfile.h sndfile.hh SoundFile.hh)
 LIBDIR = libs
 ifeq ($(SYS), Linux)
 	LIBS = $(addprefix $(LIBDIR)/, libportaudio.a) -lsndfile -lrt -lasound -ljack -lpthread
@@ -12,10 +14,12 @@ else
 endif
 
 
+#$(OBJECTS): $(SOURCES) $(DEPS)
+#	$(CC) -c -o $@ $< $(CFLAGS)
 
 all: main
 
-main: $(OBJECTS)
+main: $(OBJECTS) $(SOURCES) $(DEPS)
 ifeq ($(SYS), Linux)
 	$(CC) -o playSoundFile $(OBJECTS) $(LIBS)
 else
@@ -24,10 +28,10 @@ else
 endif
 	
 
-$(objects): $(INCDIR)/ioUtils.hh
+
 
 # using implicit rules
-main.o AudioIO.o: $(INCDIR)/AudioIO.hh
+#main.o AudioIO.o: $(INCDIR)/AudioIO.hh
 
 .PHONY: clean
 
