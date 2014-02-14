@@ -17,6 +17,7 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 
 #include "../include/portaudio.h"
 #include "../include/AudioIO.hh"
+#include "../include/Factory_AudioIO.hh"
 #include "../include/ioUtils.hh"
 #include "../include/SoundFile.hh"
 
@@ -25,8 +26,11 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 
 void displayDrivers(){
     // Will display available audio APIs and the devices they provide access to.
-    PA_AudioIO tempDevice(1, 44100, 512);
-    std::vector<ApiInfo> v_apiInfo = tempDevice.getHostApis();
+    //PA_AudioIO_ALSA tempDevice(1, 44100, 512);
+    Factory_AudioIO AudioIO_Factory;
+
+    AudioIO* tempDevice = AudioIO_Factory.createAudioIO("portaudio_alsa", 1, 44100, 512);
+    std::vector<ApiInfo> v_apiInfo = tempDevice->getHostApis();
 
     for(int api=0; api<v_apiInfo.size(); ++api){
         std::cout << "Api " << api << " : " << v_apiInfo[api].apiName << std::endl;
@@ -35,6 +39,14 @@ void displayDrivers(){
             std::cout << "\t Device " << dev << " : " << devices[dev] << std::endl;
         }
     }
+    //AudioIO_Factory.destroyAudioIO();
+     //AudioIO_Factory.test(tempDevice);
+
+
+
+    //tempDevice.enableRealTimeScheduling(1);
+    //tempDevice.enableRealTimeScheduling(0);
+
 }
 
 
@@ -54,7 +66,7 @@ int main(void)
 
     try{
         displayDrivers();
-        //playSoundFile("media/test.wav");
+    //    playSoundFile("media/test.wav");
         return 0;
     }
     catch(Pa_Exception paEx){

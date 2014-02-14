@@ -54,6 +54,7 @@ PA_AudioIO::PA_AudioIO(int chans, int sRate, int frameSize)
 PA_AudioIO::~PA_AudioIO(){
     if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
     Pa_Terminate();
+    std::cout << "HOWDY WORLD" << std::endl;
 }
 
 void PA_AudioIO::fillHostApiInfo(){
@@ -111,3 +112,16 @@ void PA_AudioIO::stop(){
     err = Pa_CloseStream(m_Stream);
     if(err!=paNoError) Pa_ErrorOccurred(err);
 }
+
+void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
+    PaAlsa_EnableRealtimeScheduling(m_Stream, enable);
+    m_isRealTime = enable;
+    if(m_isRealTime){
+        std::cout << "Real time scheduling is enabled." << std::endl;
+    }
+    else{
+        std::cout << "Real time scheduling is disabled." << std::endl;
+    }
+
+}
+

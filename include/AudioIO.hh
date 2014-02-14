@@ -16,6 +16,7 @@
 #include <iostream>
 #include <vector>
 #include "portaudio.h"
+#include "pa_linux_alsa.h"
 #include "exceptions.hh"
 #include "ioUtils.hh"
 
@@ -36,11 +37,11 @@ class AudioIO{
         /* This will contain information about all the apis the host api can find.
         If AudioIO is using a system api directly then it will return a vector of one element */
         std::vector<ApiInfo> m_vApiInf;
-    public:
+    protected:
         AudioIO(int chans, int sRate, int frameSize)
             : m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize){}
-        ~AudioIO(){}
-
+        ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
+    public:
         virtual std::vector<ApiInfo> getHostApis()const{ return m_vApiInf; }
 
         virtual void write(SAMPLE* input) = 0;
@@ -57,19 +58,22 @@ class AudioIO{
 
         virtual void start() = 0;
         virtual void stop() = 0;
+
+        virtual void enableRealTimeScheduling(bool enable){ std::cout << "Real time scheduling not enabled by default." << std::endl; }
+        virtual bool isRealTime(){ return 0; }
     protected:
         // This will usually be run at construction to get all the available api data.
         virtual void fillHostApiInfo() = 0;
 };
 
-class PA_AudioIO : public AudioIO {
+class PA_AudioIO : public AudioIO{
     protected:
         PaStreamParameters m_PaParams;
         PaStream* m_Stream;
-    public:
+    protected:
         PA_AudioIO(int chans, int sRate, int frameSize);
         ~PA_AudioIO();
-
+    public:
         virtual void write(SAMPLE *input);
         virtual void read(SAMPLE *output){}
 
@@ -78,6 +82,18 @@ class PA_AudioIO : public AudioIO {
     protected:
         virtual void Pa_ErrorOccurred(PaError err);
         virtual void fillHostApiInfo();
+};
+
+
+class PA_AudioIO_ALSA : public PA_AudioIO{
+    private:
+        bool m_isRealTime;
+    protected:
+        PA_AudioIO_ALSA(int chans, int sRate, int frameSize) : PA_AudioIO(chans, sRate, frameSize), m_isRealTime(0){}
+        ~PA_AudioIO_ALSA(){ std::cout << "DESTORYING PA" << std::endl; }
+    public:
+        void enableRealTimeScheduling(bool enable);
+        bool isRealTime(){ return m_isRealTime; }
 };
 
 #endif
