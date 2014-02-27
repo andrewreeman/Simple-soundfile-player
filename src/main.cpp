@@ -29,7 +29,7 @@ void displayDrivers(){
     //PA_AudioIO_ALSA tempDevice(1, 44100, 512);
     Factory_AudioIO AudioIO_Factory;
 
-    AudioIO* tempDevice = AudioIO_Factory.createAudioIO("portaudio_alsa", 1, 44100, 512);
+    AudioIO* tempDevice = AudioIO_Factory.createAudioIO("portaudio_alsa", 1, 44100, 512, 0);
     std::vector<ApiInfo> v_apiInfo = tempDevice->getHostApis();
 
     for(int api=0; api<v_apiInfo.size(); ++api){

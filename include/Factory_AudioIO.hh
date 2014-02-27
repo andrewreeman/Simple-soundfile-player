@@ -14,12 +14,12 @@
 #include <string>
 
 class Factory_AudioIO {
-    friend class AudioIO;
+
     private:
         static AudioIO* m_CreatedAudioIO;
     public:
         Factory_AudioIO(){}
-        AudioIO* createAudioIO(std::string audioIO, int chans, int sRate, int frameSize);
+        AudioIO* createAudioIO(std::string audioIO, int chans, int sRate, int frameSize, int deviceIndex);
         void destroyAudioIO();
         ~Factory_AudioIO(); // Also calls destroyAudioIO().
 };

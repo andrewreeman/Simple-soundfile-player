@@ -15,6 +15,7 @@
 #endif
 
 #include "AudioIO.hh"
+#include "Factory_AudioIO.hh"
 #include <vector>
 #include <math.h>
 #include <string>

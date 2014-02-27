@@ -20,6 +20,7 @@
 #include "exceptions.hh"
 #include "ioUtils.hh"
 
+
 #define PA_SAMPLE_TYPE  paFloat32
 typedef float SAMPLE;
 
@@ -29,6 +30,9 @@ struct ApiInfo{
 };
 
 class AudioIO{
+
+    friend class Factory_AudioIO;
+
     protected:
         int m_numChans;
         int m_sampleRate;
@@ -67,11 +71,14 @@ class AudioIO{
 };
 
 class PA_AudioIO : public AudioIO{
+
+    friend class Factory_AudioIO;
+
     protected:
         PaStreamParameters m_PaParams;
         PaStream* m_Stream;
     protected:
-        PA_AudioIO(int chans, int sRate, int frameSize);
+        PA_AudioIO(int chans, int sRate, int frameSize) : AudioIO(chans, sRate, frameSize){}
         ~PA_AudioIO();
     public:
         virtual void write(SAMPLE *input);
@@ -79,21 +86,30 @@ class PA_AudioIO : public AudioIO{
 
         virtual void start();
         virtual void stop();
+
+        virtual const char* getApi();
+        virtual const char* getDevice();
     protected:
         virtual void Pa_ErrorOccurred(PaError err);
         virtual void fillHostApiInfo();
+        virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
 };
 
 
 class PA_AudioIO_ALSA : public PA_AudioIO{
+
+    friend class Factory_AudioIO;
+
     private:
         bool m_isRealTime;
     protected:
-        PA_AudioIO_ALSA(int chans, int sRate, int frameSize) : PA_AudioIO(chans, sRate, frameSize), m_isRealTime(0){}
+        PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int deviceIndex);
         ~PA_AudioIO_ALSA(){ std::cout << "DESTORYING PA" << std::endl; }
+        virtual PaDeviceIndex setDevice(int deviceIndex);
     public:
         void enableRealTimeScheduling(bool enable);
         bool isRealTime(){ return m_isRealTime; }
+
 };
 
 #endif

@@ -53,7 +53,7 @@ endif
 
 clean: 
 ifeq ($(SYS), Linux)
-	rm -rf $(OBJECTS) playSoundFile *~ $(OBJDIR)/*~ $(INCDIR)/*~
+	rm -rf $(OBJECTS) $(EXECUTABLE) *~ $(OBJDIR)/*~ $(INCDIR)/*~
 else
-	rm -rf $(OBJECTS) playSoundFile *~ $(OBJDIR)/*~ $(INCDIR)/*~ portaudio_x86.dll	 
+	rm -rf $(OBJECTS)  $(EXECUTABLE) *~ $(OBJDIR)/*~ $(INCDIR)/*~ portaudio_x86.dll	 
 endif

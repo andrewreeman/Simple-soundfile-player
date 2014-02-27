@@ -23,6 +23,11 @@ class Pa_StreamException : public Pa_Exception{
     virtual const char* what() const throw() { return "Portaudio exception: Error during stream."; }
 };
 
+class Pa_DeviceIndexNotFoundException : public Pa_Exception{
+    public:
+    virtual const char* what() const throw() { return "An error occurred while trying to open the audio device";}
+};
+
 class sndFile_Exception : public std::exception{
     public:
         virtual const char* what() const throw () { return "Libsndfile exception"; }
@@ -43,4 +48,6 @@ class F_InstanceAlreadyExistsException : public Factory_AudioIOException{
     public:
         virtual const char* what() const throw() {return "Factory AudioIO exception: An instance of an AudioIO object already exists."; }
 };
+
+
 #endif
