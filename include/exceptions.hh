@@ -14,18 +14,23 @@ class Pa_Exception : public std::exception{
 
 class Pa_NoDeviceException : public Pa_Exception{
     public:
-    virtual const char* what() const throw() { return "Portaudio exception: Could not open audio device."; }
+        virtual const char* what() const throw() { return "Portaudio exception: Could not open audio device."; }
 
 };
 
 class Pa_StreamException : public Pa_Exception{
     public:
-    virtual const char* what() const throw() { return "Portaudio exception: Error during stream."; }
+        virtual const char* what() const throw() { return "Portaudio exception: Error during stream."; }
 };
 
 class Pa_DeviceIndexNotFoundException : public Pa_Exception{
     public:
-    virtual const char* what() const throw() { return "An error occurred while trying to open the audio device";}
+        virtual const char* what() const throw() { return "Portaudio exception: An error occurred while trying to open the audio device";}
+};
+
+class Pa_NoApiException : public Pa_Exception{
+    public:
+        virtual const char* what() const throw() {return "Portaudio exception: Api was not found";}
 };
 
 class sndFile_Exception : public std::exception{

@@ -1,31 +1,36 @@
 #include "../include/Factory_AudioIO.hh"
+#include <typeinfo>
+#include <string>
 
 AudioIO* Factory_AudioIO::m_CreatedAudioIO = 0;
 
 
 
-AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIOType, int chans, int sRate, int frameSize, int deviceIndex){
+AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
-
-    if(AudioIOType == "portaudio_alsa"){
-        try{
-            m_CreatedAudioIO = new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
-            return m_CreatedAudioIO;
+    try{
+        if(AudioIO == "portaudio_default") m_CreatedAudioIO = new PA_AudioIO_Default(chans, sRate, frameSize, deviceIndex);
+        else if(AudioIO == "portaudio_jack"){
+            m_CreatedAudioIO = new PA_AudioIO_JACK(chans, sRate, frameSize, deviceIndex);
+            dynamic_cast<PA_AudioIO_JACK*>(m_CreatedAudioIO)->setJackClientName(programName);
         }
-        catch(...){
-            if(m_CreatedAudioIO) delete m_CreatedAudioIO;
-            m_CreatedAudioIO = 0;
-            throw;
-        }
+        else if(AudioIO == "portaudio_alsa") m_CreatedAudioIO = new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
+        else throw F_NotValidDeviceNameException();
+        m_CreatedAudioIO->initialise();
+        return m_CreatedAudioIO;
     }
-    else{
-        throw F_NotValidDeviceNameException();
+    catch(...){
+        if(m_CreatedAudioIO) delete m_CreatedAudioIO;
+        m_CreatedAudioIO = 0;
+        throw;
     }
+    return nullptr;
 }
 
 
 void Factory_AudioIO::destroyAudioIO(){
     if(m_CreatedAudioIO){
+        m_CreatedAudioIO->terminate();
         delete m_CreatedAudioIO;
         std::cout << "Factory destroyed AudioIO" << std::endl;
     }

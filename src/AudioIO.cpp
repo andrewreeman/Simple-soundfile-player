@@ -52,6 +52,12 @@ void PA_AudioIO::write(SAMPLE* input){
         Pa_ErrorOccurred(err);
 }
 
+void PA_AudioIO::terminate(){
+        if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
+        Pa_Terminate();
+        std::cout << "PA terminated" << std::endl;
+}
+
 void PA_AudioIO::Pa_ErrorOccurred(PaError err){
         if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
         fprintf( stderr, "An error occured while using the portaudio stream\n" );
@@ -76,8 +82,10 @@ void PA_AudioIO::stop(){
     if(err!=paNoError) Pa_ErrorOccurred(err);
 }
 
-PA_AudioIO_ALSA::PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int deviceIndex)
-    : PA_AudioIO(chans, sRate, frameSize), m_isRealTime(0){
+PA_AudioIO_Default::PA_AudioIO_Default(int chans, int sRate, int frameSize, int deviceIndex)
+    : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_DEFAULT, deviceIndex){}
+
+void PA_AudioIO_Default::initialise(){
     /* This will initialize Portaudio. Get the default device then open a stream.
      * This is potentially unsafe as this is a constructor that can fail. Another way would be to have a simple constructor
      * which must always be followed by an init() function. However this leads to all functions having to check
@@ -87,7 +95,7 @@ PA_AudioIO_ALSA::PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int device
     try{
         Pa_Initialize();
         fillHostApiInfo();
-        m_PaParams.device = setDevice(0); //Pa_GetDefaultOutputDevice();
+        m_PaParams.device = setDevice(); //Pa_GetDefaultOutputDevice();
         if(m_PaParams.device == paNoDevice) throw Pa_NoDeviceException();
 
 
@@ -101,11 +109,7 @@ PA_AudioIO_ALSA::PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int device
                   m_frameSize, paClipOff, NULL, NULL );
         if(err != paNoError)
             Pa_ErrorOccurred(err);
-
-        std::cout << "The API in use is: " << getApi() << std::endl;
-        std::cout << "The device in use is: " << getDevice() << std::endl;
-
-    }
+     }
     catch(Pa_StreamException paEx){
         if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
         std::cerr << "An error occured while using the portaudio stream" << std::endl;
@@ -123,7 +127,57 @@ PA_AudioIO_ALSA::PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int device
     catch(...){
         std::cerr << "Exception occurred during AudioIO object construction." <<std::endl;
     }
+}
 
+PaDeviceIndex PA_AudioIO_Default::setDevice(int deviceIndex){
+    return Pa_GetDefaultOutputDevice();
+}
+
+PA_AudioIO_ALSA::PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int deviceIndex)
+    : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_ALSA, deviceIndex),  m_isRealTime(0){}
+
+void PA_AudioIO_ALSA::initialise(){
+    /* This will initialize Portaudio. Get the default device then open a stream.
+     * This is potentially unsafe as this is a constructor that can fail. Another way would be to have a simple constructor
+     * which must always be followed by an init() function. However this leads to all functions having to check
+     * if the object has been initialised.
+     * I prefer the potentially unsafe constructor as if this fails it will be clean
+    */
+    try{
+        Pa_Initialize();
+        fillHostApiInfo();
+        m_PaParams.device = setDevice(m_DevInd); //Pa_GetDefaultOutputDevice();
+        if(m_PaParams.device == paNoDevice) throw Pa_NoDeviceException();
+
+
+        m_PaParams.channelCount = m_numChans;
+        m_PaParams.sampleFormat = PA_SAMPLE_TYPE;
+        m_PaParams.suggestedLatency = Pa_GetDeviceInfo( m_PaParams.device )->defaultLowOutputLatency;
+        m_PaParams.hostApiSpecificStreamInfo = NULL; // Takes a void pointer. Can be used for passing other data to stream.
+
+        // Open the stream. Ready for starting
+        PaError err = Pa_OpenStream(&m_Stream, NULL, &m_PaParams, m_sampleRate,
+                  m_frameSize, paClipOff, NULL, NULL );
+        if(err != paNoError)
+            Pa_ErrorOccurred(err);
+     }
+    catch(Pa_StreamException paEx){
+        if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
+        std::cerr << "An error occured while using the portaudio stream" << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(Pa_Exception paEx){
+        if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
+        std::cerr << "An error occurred while initializing the Audio IO" << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(...){
+        std::cerr << "Exception occurred during AudioIO object construction." <<std::endl;
+    }
 }
 
 void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
@@ -135,10 +189,8 @@ void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
     else{
         std::cout << "Real time scheduling is disabled." << std::endl;
     }
-
 }
 
-THATS ALSA DONE. NOW DO JACK! THEN THE LOGIC OF SELECTING THE APIS
 
 PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
     PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paALSA);
@@ -149,4 +201,90 @@ PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
     }
 
     return Pa_HostApiDeviceIndexToDeviceIndex(alsaInd, deviceIndex);
+}
+
+PA_AudioIO_JACK::PA_AudioIO_JACK(int chans, int sRate, int frameSize, int deviceIndex)
+    : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_JACK, deviceIndex){
+}
+
+
+void PA_AudioIO_JACK::initialise(){
+    /* This will initialize Portaudio. Get the default device then open a stream.
+     * This is potentially unsafe as this is a constructor that can fail. Another way would be to have a simple constructor
+     * which must always be followed by an init() function. However this leads to all functions having to check
+     * if the object has been initialised.
+     * I prefer the potentially unsafe constructor as if this fails it will be clean
+    */
+    try{
+        const PaDeviceInfo* devInf = nullptr;
+
+        Pa_Initialize();
+        fillHostApiInfo();
+
+        std::cout << "BOOBIES " << std::endl;
+        m_PaParams.device = setDevice(m_DevInd);
+        std::cout << "TEST" << std::endl;
+        devInf = Pa_GetDeviceInfo( m_PaParams.device );
+        std::cout << "TESTICLES" << std::endl;
+        if(devInf == nullptr) throw Pa_DeviceIndexNotFoundException();
+
+        m_PaParams.channelCount = m_numChans;
+        m_PaParams.sampleFormat = PA_SAMPLE_TYPE;
+        m_PaParams.suggestedLatency = devInf->defaultLowOutputLatency;
+        m_PaParams.hostApiSpecificStreamInfo = NULL; // Takes a void pointer. Can be used for passing other data to stream.
+
+        PaError err = Pa_OpenStream(&m_Stream, NULL, &m_PaParams, m_sampleRate,
+                  m_frameSize, paClipOff, NULL, NULL );
+        if(err != paNoError)
+            Pa_ErrorOccurred(err);
+         }
+    catch(Pa_DeviceIndexNotFoundException paEx){
+        std::cerr << "Error opening device. " << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(Pa_NoApiException paEx){
+        std::cerr << "Error accessing api. " << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(Pa_StreamException paEx){
+        if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
+        std::cerr << "An error occured while using the portaudio stream" << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(Pa_Exception paEx){
+        if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
+        std::cerr << "An error occurred while initializing the Audio IO" << std::endl;
+        std::cerr << "Error message: " << paEx.what() << std::endl;
+        Pa_Terminate();
+        throw;
+    }
+    catch(...){
+        std::cerr << "Exception occurred during AudioIO object construction." <<std::endl;
+     }
+}
+
+PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
+    PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paJACK);
+    std::cout << "Error after conversion" << std::endl;
+
+    const PaHostApiInfo* apiInf = nullptr;
+    apiInf = Pa_GetHostApiInfo(alsaInd);
+    std::cout << "Error after api info" << std::endl;
+    if(!apiInf) throw Pa_NoApiException();
+    if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
+        std::cout << "Error check is ok" << std::endl;
+        throw Pa_DeviceIndexNotFoundException();
+    }
+
+    return Pa_HostApiDeviceIndexToDeviceIndex(alsaInd, deviceIndex);
+}
+
+PaError PA_AudioIO_JACK::setJackClientName(const char *programName){
+    return PaJack_SetClientName(programName);
 }

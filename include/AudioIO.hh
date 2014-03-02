@@ -17,6 +17,8 @@
 #include <vector>
 #include "portaudio.h"
 #include "pa_linux_alsa.h"
+#include "pa_jack.h"
+
 #include "exceptions.hh"
 #include "ioUtils.hh"
 
@@ -29,6 +31,10 @@ struct ApiInfo{
     std::vector<std::string> devices;
 };
 
+enum class AudioIOType{
+    PA_DEFAULT, PA_ALSA, PA_JACK
+};
+
 class AudioIO{
 
     friend class Factory_AudioIO;
@@ -37,15 +43,21 @@ class AudioIO{
         int m_numChans;
         int m_sampleRate;
         int m_frameSize; // The block size will be frameSize * numChans
+        AudioIOType m_audioIOType;
 
         /* This will contain information about all the apis the host api can find.
         If AudioIO is using a system api directly then it will return a vector of one element */
         std::vector<ApiInfo> m_vApiInf;
+
     protected:
-        AudioIO(int chans, int sRate, int frameSize)
-            : m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize){}
+        AudioIO(int chans, int sRate, int frameSize, AudioIOType type)
+            : m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize), m_audioIOType(type){}
         ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
+        virtual void initialise() = 0;
+        virtual void terminate() = 0;
+
     public:
+        AudioIOType getAudioIOType(){ return m_audioIOType; }
         virtual std::vector<ApiInfo> getHostApis()const{ return m_vApiInf; }
 
         virtual void write(SAMPLE* input) = 0;
@@ -53,6 +65,7 @@ class AudioIO{
 
         void setChans(int chans);
         int getChans()const{return m_numChans;}
+
 
         void setSampleRate(int sampleRate);
         int getSampleRate()const{return m_sampleRate;}
@@ -77,9 +90,12 @@ class PA_AudioIO : public AudioIO{
     protected:
         PaStreamParameters m_PaParams;
         PaStream* m_Stream;
+        PaDeviceIndex m_DevInd;
     protected:
-        PA_AudioIO(int chans, int sRate, int frameSize) : AudioIO(chans, sRate, frameSize){}
+        PA_AudioIO(int chans, int sRate, int frameSize, AudioIOType type, PaDeviceIndex index) : AudioIO(chans, sRate, frameSize, type){}
         ~PA_AudioIO();
+        virtual void initialise() = 0;
+        virtual void terminate();
     public:
         virtual void write(SAMPLE *input);
         virtual void read(SAMPLE *output){}
@@ -95,6 +111,16 @@ class PA_AudioIO : public AudioIO{
         virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
 };
 
+class PA_AudioIO_Default : public PA_AudioIO{
+
+    friend class Factory_AudioIO;
+
+    protected:
+        PA_AudioIO_Default(int chans, int sRate, int frameSize, int deviceIndex);
+        ~PA_AudioIO_Default(){std::cout << "DESTROYING PA DEFAULT"; }
+        virtual PaDeviceIndex setDevice(int deviceIndex = 0);
+        virtual void initialise();
+};
 
 class PA_AudioIO_ALSA : public PA_AudioIO{
 
@@ -104,12 +130,29 @@ class PA_AudioIO_ALSA : public PA_AudioIO{
         bool m_isRealTime;
     protected:
         PA_AudioIO_ALSA(int chans, int sRate, int frameSize, int deviceIndex);
-        ~PA_AudioIO_ALSA(){ std::cout << "DESTORYING PA" << std::endl; }
+        ~PA_AudioIO_ALSA(){ std::cout << "DESTORYING PA ALSA" << std::endl; }
         virtual PaDeviceIndex setDevice(int deviceIndex);
+        virtual void initialise();
     public:
         void enableRealTimeScheduling(bool enable);
         bool isRealTime(){ return m_isRealTime; }
 
 };
 
+class PA_AudioIO_JACK : public PA_AudioIO{
+
+    friend class Factory_AudioIO;
+
+    protected:
+        PA_AudioIO_JACK(int chans, int sRate, int frameSize, int deviceIndex);
+        ~PA_AudioIO_JACK(){ std::cout << "DESTORYING PA JACK" << std::endl; }
+        virtual PaDeviceIndex setDevice(int deviceIndex);
+        virtual void initialise();
+    public:
+        PaError setJackClientName(const char* programName);
+
+};
+
 #endif
+
+

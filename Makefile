@@ -1,6 +1,6 @@
 SYS := $(shell uname)
 CC=g++
-CFLAGS = -c -Wall
+CFLAGS = -Wall -std=c++0x -Werror 
 OBJDIR = src
 SOURCES = $(addprefix $(OBJDIR)/, main.cpp AudioIO.cpp ioUtils.cpp SoundFile.cpp Factory_AudioIO.cpp)
 OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o SoundFile.o Factory_AudioIO.o)
@@ -21,14 +21,14 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 ifeq ($(SYS), Linux)
-	$(CC) -o $@ $(OBJECTS) $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJECTS) $(LIBS)
 else
-	$(CC) -o $@ $(OBJECTS) $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJECTS) $(LIBS)
 	cp $(LIBDIR)/portaudio_x86.dll  .
 endif
 
 .cpp.o:
-	g++ -c $< -o $@
+	g++ $(CFLAGS) -c $< -o $@
 
 #src/main.o: src/main.cpp 
 #	g++ -c $< -o $@
