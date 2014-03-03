@@ -2,9 +2,9 @@
 #include <typeinfo>
 #include <string>
 
+using namespace AudioInOut;
+
 AudioIO* Factory_AudioIO::m_CreatedAudioIO = 0;
-
-
 
 AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();

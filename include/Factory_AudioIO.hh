@@ -12,9 +12,11 @@
 
 #include "AudioIO.hh"
 #include <string>
+#include <iostream>
+
+using namespace AudioInOut;
 
 class Factory_AudioIO {
-
     private:
         static AudioIO* m_CreatedAudioIO;
     public:

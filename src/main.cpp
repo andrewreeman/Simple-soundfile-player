@@ -26,14 +26,7 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 const char* PROGRAM_NAME = "Simple Soundfile Player";
 
 void displayDrivers(){
-    // Will display available audio APIs and the devices they provide access to.
-    //PA_AudioIO_ALSA tempDevice(1, 44100, 512);
-    Factory_AudioIO AudioIO_Factory;
-
-    AudioIO* tempDevice = AudioIO_Factory.createAudioIO("portaudio_jack", 1, 44100, 512, 0, PROGRAM_NAME);
-
-    std::vector<ApiInfo> v_apiInfo = tempDevice->getHostApis();
-
+    std::vector<ApiInfo> v_apiInfo = AudioInOut::getHostApis();
     for(unsigned api=0; api<v_apiInfo.size(); ++api){
         std::cout << "Api " << api << " : " << v_apiInfo[api].apiName << std::endl;
         std::vector<std::string> devices = v_apiInfo[api].devices;
@@ -41,32 +34,18 @@ void displayDrivers(){
             std::cout << "\t Device " << dev << " : " << devices[dev] << std::endl;
         }
     }
-    //AudioIO_Factory.destroyAudioIO();
-     //AudioIO_Factory.test(tempDevice);
-
-
-
-    //tempDevice.enableRealTimeScheduling(1);
-    //tempDevice.enableRealTimeScheduling(0);
-
 }
-
 
 int main(void)
 {
 
-
-    /* If option == display drivers then
-        * displayDrivers()
-        * return 0
-     *
-     *If option == [driver] [driverNumber]
-        * playSoundFile("...", driverNumber)
-      cont...
-
-     */
-
     try{
+        // if(display drivers) displayDrivers and exit
+        // if(ops) api = op1, device = op2
+        //
+        // verifyApiDevice(op1, op2)
+        //playSoundFile("file", op1, op2)
+
         displayDrivers();
     //    playSoundFile("media/test.wav");
         return 0;
