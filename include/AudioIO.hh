@@ -16,8 +16,11 @@
 #include <iostream>
 #include <vector>
 #include "portaudio.h"
-#include "pa_linux_alsa.h"
-#include "pa_jack.h"
+
+#ifdef __linux__
+    #include "pa_linux_alsa.h"
+    #include "pa_jack.h"
+#endif
 
 #include "exceptions.hh"
 #include "ioUtils.hh"
@@ -53,7 +56,7 @@ class AudioIO{
 
         AudioIO(int chans, int sRate, int frameSize, AudioIOType type)
             : m_numChans(chans), m_sampleRate(sRate), m_frameSize(frameSize), m_audioIOType(type){}
-        ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
+        virtual ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
         virtual void initialise() = 0;
         virtual void terminate() = 0;
 
@@ -119,6 +122,8 @@ class PA_AudioIO_Default : public PA_AudioIO{
         //virtual void initialise();
 };
 
+#ifdef __linux__
+
 class PA_AudioIO_ALSA : public PA_AudioIO{
 
     friend class ::Factory_AudioIO;
@@ -149,6 +154,9 @@ class PA_AudioIO_JACK : public PA_AudioIO{
         PaError setJackClientName(const char* programName);
 
 };
+
+#endif
+
 };
 #endif
 

@@ -10,11 +10,13 @@ AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRat
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
     try{
         if(AudioIO == "portaudio_default") m_CreatedAudioIO = new PA_AudioIO_Default(chans, sRate, frameSize, deviceIndex);
+#ifdef __linux__
         else if(AudioIO == "portaudio_jack"){
             m_CreatedAudioIO = new PA_AudioIO_JACK(chans, sRate, frameSize, deviceIndex);
             dynamic_cast<PA_AudioIO_JACK*>(m_CreatedAudioIO)->setJackClientName(programName);
         }
         else if(AudioIO == "portaudio_alsa") m_CreatedAudioIO = new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
+#endif
         else throw F_NotValidDeviceNameException();
         m_CreatedAudioIO->initialise();
         return m_CreatedAudioIO;

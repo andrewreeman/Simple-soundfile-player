@@ -52,8 +52,7 @@ endif
 .PHONY: clean
 
 clean: 
-ifeq ($(SYS), Linux)
-	rm -rf $(OBJECTS) $(EXECUTABLE) *~ $(OBJDIR)/*~ $(INCDIR)/*~
-else
-	rm -rf $(OBJECTS)  $(EXECUTABLE) *~ $(OBJDIR)/*~ $(INCDIR)/*~ portaudio_x86.dll	 
-endif
+	rm -rf $(OBJECTS) $(EXECUTABLE) *~ $(OBJDIR)/*~ $(INCDIR)/*~ $(EXECUTABLE).exe portaudio_x86.dll
+
+
+

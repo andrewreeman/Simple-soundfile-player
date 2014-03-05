@@ -3,6 +3,7 @@
 namespace AudioInOut{
 
 std::vector<ApiInfo> getHostApis(){
+    Pa_Initialize();
     PaHostApiIndex apiCount = Pa_GetHostApiCount();
     PaDeviceIndex devCount = 0;
     PaDeviceIndex devNum = 0;
@@ -24,6 +25,7 @@ std::vector<ApiInfo> getHostApis(){
             vApiInf[api].devices = devs;
         }
     }
+    Pa_Terminate();
     return vApiInf;
 }
 
@@ -131,6 +133,8 @@ PaDeviceIndex PA_AudioIO_Default::setDevice(int deviceIndex){
     return Pa_GetDefaultOutputDevice();
 }
 
+#ifdef __linux__
+
 void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
     PaAlsa_EnableRealtimeScheduling(m_Stream, enable);
     m_isRealTime = enable;
@@ -173,5 +177,5 @@ PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
 PaError PA_AudioIO_JACK::setJackClientName(const char *programName){
     return PaJack_SetClientName(programName);
 }
-
+#endif
 }
