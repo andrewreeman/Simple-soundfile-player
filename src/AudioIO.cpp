@@ -160,14 +160,11 @@ PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
 
 PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
     PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paJACK);
-    std::cout << "Error after conversion" << std::endl;
-
     const PaHostApiInfo* apiInf = nullptr;
+
     apiInf = Pa_GetHostApiInfo(alsaInd);
-    std::cout << "Error after api info" << std::endl;
     if(!apiInf) throw Pa_NoApiException();
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
-        std::cout << "Error check is ok" << std::endl;
         throw Pa_DeviceIndexNotFoundException();
     }
 

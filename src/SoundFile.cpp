@@ -15,16 +15,19 @@ void playSoundFile(const char* soundfile){
     int interleavedBufferSize = inFile_Inf.frames * inFile_Inf.channels;
     std::vector<SAMPLE> inputBuffer_Interleaved(interleavedBufferSize + blockSize); // add one block so we don't go over
 
-    outputDevice = factoryAudioIO.createAudioIO("portaudio_alsa", inFile_Inf.channels, inFile_Inf.samplerate, FRAMES_PER_BUFFER, 0);
+    outputDevice = factoryAudioIO.createAudioIO("portaudio_jack", inFile_Inf.channels, inFile_Inf.samplerate, FRAMES_PER_BUFFER, 0, soundfile);
 
     sf_readf_float(inFile, inputBuffer_Interleaved.data(), interleavedBufferSize);
     outputDevice->start();
 
+
     for(int i=0; i<interleavedBufferSize; i+= blockSize )
         outputDevice->write(&inputBuffer_Interleaved[i]);
-
     outputDevice->stop();
+
+
     sf_close(inFile);
+
 }
 
 void playSine(){
@@ -38,7 +41,7 @@ void playSine(){
     std::vector<SAMPLE> inputBuffer_Interleaved(interleavedBufferSize);
     AudioIO* outputDevice;
     Factory_AudioIO factoryAudioIO;
-    outputDevice= factoryAudioIO.createAudioIO("portaudio_alsa", numChans, sampleRate, FRAMES_PER_BUFFER, 0);
+    outputDevice= factoryAudioIO.createAudioIO("portaudio_default", numChans, sampleRate, FRAMES_PER_BUFFER, 0);
 
 
     for(int i=0; i<interleavedBufferSize; ++i){

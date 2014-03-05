@@ -46,8 +46,8 @@ int main(void)
         // verifyApiDevice(op1, op2)
         //playSoundFile("file", op1, op2)
 
-        displayDrivers();
-    //    playSoundFile("media/test.wav");
+        //displayDrivers();
+        playSoundFile("media/test.wav");
         return 0;
     }
     catch(Pa_Exception paEx){
