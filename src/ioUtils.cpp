@@ -32,5 +32,18 @@ void interleave(std::vector< std::vector<float>* > inBuffers, std::vector<float>
     }
 }
 
+std::vector<float> monoToStereoInterleaved(std::vector<float> monoInput){
+
+    std::vector< std::vector<float>* > inputBufferLR(2);
+    inputBufferLR[0] = &monoInput;
+    inputBufferLR[1] = &monoInput;
+    std::vector<float> outputBuffer_Stereo(monoInput.size() * 2);
+
+    interleave(inputBufferLR, outputBuffer_Stereo, 2);
+
+
+    return outputBuffer_Stereo;
+}
+
 
 

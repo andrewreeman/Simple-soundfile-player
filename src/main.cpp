@@ -47,7 +47,8 @@ int main(void)
         //playSoundFile("file", op1, op2)
 
         //displayDrivers();
-        playSoundFile("media/test.wav");
+        playSoundFile("media/test.wav", "portaudio_jack");
+        //playSine();
         return 0;
     }
     catch(Pa_Exception paEx){

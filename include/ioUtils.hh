@@ -12,7 +12,9 @@
 
 
 #include <vector>
+#include <iostream>
 
 void interleave(std::vector< std::vector<float>* > inBuffers, std::vector<float> &interleavedBuffer, int numChans);
+std::vector<float> monoToStereoInterleaved(std::vector<float> monoInput_StereoOut);
 
 #endif

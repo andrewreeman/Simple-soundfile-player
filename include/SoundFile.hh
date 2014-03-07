@@ -16,14 +16,16 @@
 
 #include "AudioIO.hh"
 #include "Factory_AudioIO.hh"
+#include "ioUtils.hh"
 #include <vector>
 #include <math.h>
 #include <string>
+#include <cstring>
 
 #define FRAMES_PER_BUFFER (512)
 #define TWO_PI 6.28315
 
-void playSoundFile(const char* soundfile);
+void playSoundFile(const char* soundfile, const char* audioApi = "portaudio_default");
 
 void playSine();
 
