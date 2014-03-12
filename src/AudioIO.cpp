@@ -159,20 +159,35 @@ PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
 }
 
 PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
-    PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paJACK);
+    PaHostApiIndex jackInd = Pa_HostApiTypeIdToHostApiIndex(paJACK);
     const PaHostApiInfo* apiInf = nullptr;
 
-    apiInf = Pa_GetHostApiInfo(alsaInd);
+    apiInf = Pa_GetHostApiInfo(jackInd);
     if(!apiInf) throw Pa_NoApiException();
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
 
-    return Pa_HostApiDeviceIndexToDeviceIndex(alsaInd, deviceIndex);
+    return Pa_HostApiDeviceIndexToDeviceIndex(jackInd, deviceIndex);
 }
 
 PaError PA_AudioIO_JACK::setJackClientName(const char *programName){
     return PaJack_SetClientName(programName);
 }
 #endif
+#if defined(_WIN32) || defined(__CYGWIN__)
+PaError PA_AudioIO_ASIO::setDevice(int deviceIndex){
+    PaHostApiIndex asioInd = Pa_HostApiTypeIdToHostApiIndex(paASIO);
+    const PaHostApiInfo* apiInf = nullptr;
+
+    apiInf = Pa_GetHostApiInfo(asioInd);
+    if(!apiInf) throw Pa_NoApiException();
+    if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
+        throw Pa_DeviceIndexNotFoundException();
+    }
+
+    return Pa_HostApiDeviceIndexToDeviceIndex(asioInd, deviceIndex);
+}
+#endif
+
 }

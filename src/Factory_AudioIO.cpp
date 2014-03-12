@@ -17,6 +17,9 @@ AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRat
         }
         else if(AudioIO == "portaudio_alsa") m_CreatedAudioIO = new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
 #endif
+#if defined(_WIN32) || defined(__CYGWIN__)
+        else if(AudioIO == "portaudio_asio") m_CreatedAudioIO = new PA_AudioIO_ASIO(chans, sRate, frameSize, deviceIndex);
+#endif
         else throw F_NotValidDeviceNameException();
         m_CreatedAudioIO->initialise();
         return m_CreatedAudioIO;

@@ -14,6 +14,7 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 #include <vector>
 #include <string>
 #include <iostream>
+#include <exception>
 
 #include "../include/portaudio.h"
 #include "../include/AudioIO.hh"
@@ -47,20 +48,24 @@ int main(void)
         //playSoundFile("file", op1, op2)
 
         //displayDrivers();
-        playSoundFile("media/test.wav", "portaudio_jack");
+        playSoundFile("media/test.wav", "portaudio_asio");
         //playSine();
         return 0;
     }
     catch(Pa_Exception paEx){
-        std::cout << paEx.what() << std::endl;
+        std::cerr << paEx.what() << std::endl;
         return 1;
     }
     catch(sndFile_Exception sndEx){
-        std::cout << sndEx.what() << std::endl;
+        std::cerr << sndEx.what() << std::endl;
+        return 1;
+    }
+    catch(std::exception& e ){
+        std::cerr << e.what() << std::endl;
         return 1;
     }
     catch(...){
-        std::cout << "Exception occurred" <<std::endl;
+        std::cerr << "Exception occurred" <<std::endl;
         return 1;
     }
 }

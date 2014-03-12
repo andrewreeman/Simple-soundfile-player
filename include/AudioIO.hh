@@ -154,8 +154,20 @@ class PA_AudioIO_JACK : public PA_AudioIO{
         PaError setJackClientName(const char* programName);
 
 };
-
 #endif
+#if defined(_WIN32) || defined(__CYGWIN__)
+class PA_AudioIO_ASIO: public PA_AudioIO{
+
+    friend class ::Factory_AudioIO;
+
+    protected:
+        PA_AudioIO_ASIO(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_JACK, deviceIndex){}
+        ~PA_AudioIO_ASIO(){ std::cout << "DESTORYING PA ASIO" << std::endl; }
+        virtual PaDeviceIndex setDevice(int deviceIndex);
+
+};
+#endif
+
 
 };
 #endif
