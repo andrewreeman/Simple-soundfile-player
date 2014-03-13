@@ -54,6 +54,8 @@ int main(void)
     }
     catch(Pa_Exception paEx){
         std::cerr << paEx.what() << std::endl;
+        std::cerr << "PA error number:" << Pa_GetLastHostErrorInfo()->errorCode << std::endl;
+        std::cerr << "PA error text:" << Pa_GetLastHostErrorInfo()->errorText << std::endl;
         return 1;
     }
     catch(sndFile_Exception sndEx){
