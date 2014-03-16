@@ -21,9 +21,22 @@
 #include <math.h>
 #include <string>
 #include <cstring>
+#include <exception>
 
 #define FRAMES_PER_BUFFER (512)
 #define TWO_PI 6.28315
+
+class SoundFile_Exception : public std::exception{
+    public:
+        virtual const char* what() const throw() { return "Play Sound File exception."; }
+};
+
+class isNotOutputDevice: public SoundFile_Exception{
+    public:
+        virtual const char* what() const throw() { return "Device is not an output device."; }
+};
+
+
 
 void playSoundFile(const char* soundfile, const char* audioApi = "portaudio_default");
 

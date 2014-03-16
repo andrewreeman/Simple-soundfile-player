@@ -8,6 +8,7 @@ std::vector<ApiInfo> getHostApis(){
     PaDeviceIndex devCount = 0;
     PaDeviceIndex devNum = 0;
     std::vector<std::string> devs;
+    std::vector<DevInfo> devInf;
     const PaHostApiInfo* p_ApiInf;
     const PaDeviceInfo* p_DevInf;
 
@@ -18,10 +19,16 @@ std::vector<ApiInfo> getHostApis(){
         vApiInf[api].apiName = p_ApiInf->name;
         devCount = p_ApiInf->deviceCount;
         devs.resize(devCount);
+        devInf.resize(devCount);
         for(int dev=0; dev<devCount; ++dev){
+
             devNum = Pa_HostApiDeviceIndexToDeviceIndex(api, dev);
             p_DevInf = Pa_GetDeviceInfo(devNum);
             devs[dev] = p_DevInf->name;
+            devInf[dev].devName = p_DevInf->name;
+            devInf[dev].numInputs = p_DevInf->maxInputChannels;
+            devInf[dev].numOutputs= p_DevInf->maxOutputChannels;
+            vApiInf[api].devicess = devInf;
             vApiInf[api].devices = devs;
         }
     }
@@ -36,12 +43,6 @@ PA_AudioIO::~PA_AudioIO(){
 }
 
 void PA_AudioIO::initialise(){
-    /* This will initialize Portaudio. Get the default device then open a stream.
-     * This is potentially unsafe as this is a constructor that can fail. Another way would be to have a simple constructor
-     * which must always be followed by an init() function. However this leads to all functions having to check
-     * if the object has been initialised.
-     * I prefer the potentially unsafe constructor as if this fails it will be clean
-    */
     try{
         Pa_Initialize();
         m_PaParams.device = setDevice(m_DevInd); //Pa_GetDefaultOutputDevice();
@@ -86,12 +87,6 @@ const char* PA_AudioIO::getApi(){
     return ApiInf->name;
 }
 
-const char* PA_AudioIO::getDevice(){
-    PaDeviceIndex DevInd = m_PaParams.device;
-    const PaDeviceInfo* DevInf = Pa_GetDeviceInfo(DevInd);
-    return DevInf->name;
-}
-
 void PA_AudioIO::write(SAMPLE* input){
     //Expects interleaved audio. Frame size is NOT the block size.
     PaError err = Pa_WriteStream(m_Stream, input, m_frameSize);
@@ -127,6 +122,16 @@ void PA_AudioIO::stop(){
     if(err!=paNoError) Pa_ErrorOccurred(err);
     err = Pa_CloseStream(m_Stream);
     if(err!=paNoError) Pa_ErrorOccurred(err);
+}
+
+DevInfo PA_AudioIO::getDevInfo(){
+    PaDeviceIndex paDevInd = m_PaParams.device ;
+    const PaDeviceInfo* paInf = Pa_GetDeviceInfo(paDevInd);
+    DevInfo devInf;
+    devInf.devName = paInf->name;
+    devInf.numInputs = paInf->maxInputChannels;
+    devInf.numOutputs = paInf->maxOutputChannels;
+    return devInf;
 }
 
 PaDeviceIndex PA_AudioIO_Default::setDevice(int deviceIndex){
@@ -175,8 +180,9 @@ PaError PA_AudioIO_JACK::setJackClientName(const char *programName){
     return PaJack_SetClientName(programName);
 }
 #endif
+
 #if defined(_WIN32) || defined(__CYGWIN__)
-PaError PA_AudioIO_ASIO::setDevice(int deviceIndex){
+PaDeviceIndex PA_AudioIO_ASIO::setDevice(int deviceIndex){
     PaHostApiIndex asioInd = Pa_HostApiTypeIdToHostApiIndex(paASIO);
     const PaHostApiInfo* apiInf = nullptr;
 
@@ -186,8 +192,36 @@ PaError PA_AudioIO_ASIO::setDevice(int deviceIndex){
         throw Pa_DeviceIndexNotFoundException();
     }
 
+    std::cout << "Warning: ASIO blocking is currently unimplemented in portaudio." << std::endl;
     return Pa_HostApiDeviceIndexToDeviceIndex(asioInd, deviceIndex);
 }
+
+PaDeviceIndex PA_AudioIO_DS::setDevice(int deviceIndex){
+    PaHostApiIndex dsInd = Pa_HostApiTypeIdToHostApiIndex(paDirectSound);
+    const PaHostApiInfo* apiInf = nullptr;
+
+    apiInf = Pa_GetHostApiInfo(dsInd);
+    if(!apiInf) throw Pa_NoApiException();
+    if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
+        throw Pa_DeviceIndexNotFoundException();
+    }
+    return Pa_HostApiDeviceIndexToDeviceIndex(dsInd, deviceIndex);
+
+}
+
+PaDeviceIndex PA_AudioIO_WMME::setDevice(int deviceIndex){
+    PaHostApiIndex mmeInd = Pa_HostApiTypeIdToHostApiIndex(paMME);
+    const PaHostApiInfo* apiInf = nullptr;
+
+    apiInf = Pa_GetHostApiInfo(mmeInd);
+    if(!apiInf) throw Pa_NoApiException();
+    if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
+        throw Pa_DeviceIndexNotFoundException();
+    }
+    return Pa_HostApiDeviceIndexToDeviceIndex(mmeInd, deviceIndex); // how do I find the first output device ?
+}
+
+
 #endif
 
 }

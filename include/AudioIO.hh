@@ -21,6 +21,11 @@
     #include "pa_linux_alsa.h"
     #include "pa_jack.h"
 #endif
+#if defined(_WIN32) || defined(__CYGWIN__)
+    #include "pa_asio.h"
+    #include "pa_win_ds.h"
+//    #include "pa_win_wmme.h"
+#endif
 
 #include "exceptions.hh"
 #include "ioUtils.hh"
@@ -33,13 +38,22 @@ class Factory_AudioIO;
 
 namespace AudioInOut{
 
+struct DevInfo{
+    std::string devName;
+    int numInputs;
+    int numOutputs;
+};
+
 struct ApiInfo{
     std::string apiName;
     std::vector<std::string> devices;
+    std::vector<DevInfo> devicess;
 };
 
+
+
 enum class AudioIOType{
-    PA_DEFAULT, PA_ALSA, PA_JACK
+    PA_DEFAULT, PA_ALSA, PA_JACK, PA_ASIO, PA_DS, PA_WMME
 };
 
 std::vector<ApiInfo> getHostApis();
@@ -63,7 +77,7 @@ class AudioIO{
     public:
         AudioIOType getAudioIOType(){ return m_audioIOType; }
 //        virtual std::vector<ApiInfo> getHostApis()const{ return m_vApiInf; }
-
+        virtual DevInfo getDevInfo() = 0;
         virtual void write(SAMPLE* input) = 0;
         virtual void read(SAMPLE* output) = 0;
 
@@ -98,6 +112,9 @@ class PA_AudioIO : public AudioIO{
         virtual void initialise();
         virtual void terminate();
     public:
+
+        DevInfo getDevInfo();
+
         virtual void write(SAMPLE *input);
         virtual void read(SAMPLE *output){}
 
@@ -105,7 +122,6 @@ class PA_AudioIO : public AudioIO{
         virtual void stop();
 
         virtual const char* getApi();
-        virtual const char* getDevice();
     protected:
         virtual void Pa_ErrorOccurred(PaError err);
         virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
@@ -161,11 +177,37 @@ class PA_AudioIO_ASIO: public PA_AudioIO{
     friend class ::Factory_AudioIO;
 
     protected:
-        PA_AudioIO_ASIO(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_JACK, deviceIndex){}
+        PA_AudioIO_ASIO(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_ASIO, deviceIndex){}
         ~PA_AudioIO_ASIO(){ std::cout << "DESTORYING PA ASIO" << std::endl; }
+
         virtual PaDeviceIndex setDevice(int deviceIndex);
 
 };
+
+class PA_AudioIO_DS : public PA_AudioIO{
+
+    friend class ::Factory_AudioIO;
+
+    protected:
+
+        PA_AudioIO_DS(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_DS, deviceIndex){}
+        ~PA_AudioIO_DS(){ std::cout << "DESTORYING PA DS" << std::endl; }
+        virtual PaDeviceIndex setDevice(int deviceIndex);
+
+};
+
+class PA_AudioIO_WMME : public PA_AudioIO{
+
+    friend class ::Factory_AudioIO;
+
+    protected:
+
+        PA_AudioIO_WMME(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_WMME, deviceIndex){}
+        ~PA_AudioIO_WMME(){ std::cout << "DESTORYING PA WMME" << std::endl; }
+        virtual PaDeviceIndex setDevice(int deviceIndex);
+
+};
+
 #endif
 
 

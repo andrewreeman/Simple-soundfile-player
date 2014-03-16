@@ -31,8 +31,12 @@ void displayDrivers(){
     for(unsigned api=0; api<v_apiInfo.size(); ++api){
         std::cout << "Api " << api << " : " << v_apiInfo[api].apiName << std::endl;
         std::vector<std::string> devices = v_apiInfo[api].devices;
+        std::vector<DevInfo> devs = v_apiInfo[api].devicess;
         for(unsigned dev=0; dev<devices.size(); ++dev){
             std::cout << "\t Device " << dev << " : " << devices[dev] << std::endl;
+            std::cout << "\t \t Max inputs: " << devs[dev].numInputs << std::endl;
+            std::cout << "\t \t Max outputs: " << devs[dev].numOutputs << std::endl;
+
         }
     }
 }
@@ -47,8 +51,8 @@ int main(void)
         // verifyApiDevice(op1, op2)
         //playSoundFile("file", op1, op2)
 
-        //displayDrivers();
-        playSoundFile("media/test.wav", "portaudio_asio");
+        displayDrivers();
+        //playSoundFile("media/test.wav", "portaudio_default");
         //playSine();
         return 0;
     }
@@ -71,4 +75,5 @@ int main(void)
         return 1;
     }
 }
+
 
