@@ -6,6 +6,9 @@ using namespace AudioInOut;
 
 AudioIO* Factory_AudioIO::m_CreatedAudioIO = 0;
 
+//USE A CONSTRUCTAUDIOIO FUNCTION THAT WILL SELECT THE CORRECT CONSTRUCTOR. AND A POPULATE CONSTRUCTOR LIST TOADD CONSTRUCTORS TO
+
+
 AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
     try{

@@ -47,12 +47,15 @@ int main(int argc, char** argv)
 
         std::string filePath;
         bool isDisplayDriversOn;
+        AudioIOType audioInOutApi;
+
         argParse(argc, argv, &filePath, &isDisplayDriversOn);
         if(isDisplayDriversOn){
             displayDrivers();
             return 0;
         }
         if( fileExists(filePath) ){
+            audioInOutApi = selectApi(0);
             playSoundFile(filePath.c_str(), "portaudio_default");
             return 0;
         }

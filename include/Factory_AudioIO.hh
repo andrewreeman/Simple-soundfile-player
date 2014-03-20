@@ -13,17 +13,22 @@
 #include "AudioIO.hh"
 #include <string>
 #include <iostream>
+#include <map>
 
 using namespace AudioInOut;
+
+typedef AudioIO* (*t_ConstructAudioIO_Func)(std::string, int, int, int, int, const char*);
 
 class Factory_AudioIO {
     private:
         static AudioIO* m_CreatedAudioIO;
+        std::map<AudioIOType, t_ConstructAudioIO_Func> m_ConstructorList;
     public:
         Factory_AudioIO(){}
         AudioIO* createAudioIO(std::string audioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName = "portaudio");
         void destroyAudioIO();
         ~Factory_AudioIO(); // Also calls destroyAudioIO().
+
 };
 
 
