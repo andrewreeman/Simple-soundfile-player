@@ -15,6 +15,8 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 #include <string>
 #include <iostream>
 #include <exception>
+#include <tclap/CmdLine.h>
+#include <fstream>
 
 #include "../include/portaudio.h"
 #include "../include/AudioIO.hh"
@@ -25,6 +27,66 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 #define PI 3.14159265
 
 const char* PROGRAM_NAME = "Simple Soundfile Player";
+
+void displayDrivers();
+AudioIOType selectApi(int apiType);
+
+bool fileExists(std::string filePath);
+void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDriversOn);
+
+int main(int argc, char** argv)
+{
+
+    try{
+        // if(display drivers) displayDrivers and exit
+        // if(ops) api = op1, device = op2
+        //
+        // verifyApiDevice(op1, op2)
+        //playSoundFile("file", op1, op2)
+
+
+        std::string filePath;
+        bool isDisplayDriversOn;
+        argParse(argc, argv, &filePath, &isDisplayDriversOn);
+        if(isDisplayDriversOn){
+            displayDrivers();
+            return 0;
+        }
+        if( fileExists(filePath) ){
+            playSoundFile(filePath.c_str(), "portaudio_default");
+            return 0;
+        }
+        else{
+            std::cerr << "Error: " << filePath << " is not a valid file path." << std::endl;
+            return 1;
+        }
+
+        //playSine();
+        return 0;
+    }
+    catch(Pa_Exception& paEx){
+        std::cerr << paEx.what() << std::endl;
+        std::cerr << "PA error number:" << Pa_GetLastHostErrorInfo()->errorCode << std::endl;
+        std::cerr << "PA error text:" << Pa_GetLastHostErrorInfo()->errorText << std::endl;
+        return 1;
+    }
+    catch(sndFile_Exception& sndEx){ // catch by reference is important as this will catch the exact child instead of copying and casting to parent
+        std::cerr << sndEx.what() << std::endl;
+        return 1;
+    }
+    catch(TCLAP::ArgException &e){
+        std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+        return 1;
+     }
+    catch(std::exception& e ){
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    catch(...){
+        std::cerr << "Exception occurred" <<std::endl;
+        return 1;
+    }
+}
 
 void displayDrivers(){
     std::vector<ApiInfo> v_apiInfo = AudioInOut::getHostApis();
@@ -41,39 +103,24 @@ void displayDrivers(){
     }
 }
 
-int main(void)
-{
+AudioIOType selectApi(int apiType){
+    return AudioIOType::PA_DEFAULT;
+}
 
-    try{
-        // if(display drivers) displayDrivers and exit
-        // if(ops) api = op1, device = op2
-        //
-        // verifyApiDevice(op1, op2)
-        //playSoundFile("file", op1, op2)
-
-        displayDrivers();
-        //playSoundFile("media/test.wav", "portaudio_default");
-        //playSine();
-        return 0;
-    }
-    catch(Pa_Exception paEx){
-        std::cerr << paEx.what() << std::endl;
-        std::cerr << "PA error number:" << Pa_GetLastHostErrorInfo()->errorCode << std::endl;
-        std::cerr << "PA error text:" << Pa_GetLastHostErrorInfo()->errorText << std::endl;
-        return 1;
-    }
-    catch(sndFile_Exception sndEx){
-        std::cerr << sndEx.what() << std::endl;
-        return 1;
-    }
-    catch(std::exception& e ){
-        std::cerr << e.what() << std::endl;
-        return 1;
-    }
-    catch(...){
-        std::cerr << "Exception occurred" <<std::endl;
-        return 1;
-    }
+bool fileExists(std::string filePath){
+    std::ifstream file(filePath.c_str(), std::ios::binary);
+    if(!file) return false;
+    return true;
 }
 
 
+void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDriverOn){
+        TCLAP::CmdLine cmd("Test for argument parsing", ' ', "1.0");
+        TCLAP::UnlabeledValueArg<std::string> filePathArg("name", "The path to the audio file.", true, "", "string");
+        TCLAP::SwitchArg dispDrivArg("D", "DisplayDriver", "Displays drivers and exits.", false);
+
+        cmd.xorAdd(filePathArg, dispDrivArg);
+        cmd.parse(argc, argv);
+        *filePath = filePathArg.getValue();
+        *isDisplayDriverOn = dispDrivArg.getValue();
+}

@@ -12,7 +12,7 @@ void playSoundFile(const char* soundfile, const char* audioApi){
     Then uses portaudio to play this file.
     */
     SF_INFO inFile_Inf;
-    SNDFILE* inFile;
+    SNDFILE* inFile = nullptr;
     AudioIO* outputDevice;
     Factory_AudioIO factoryAudioIO;
     inFile = sf_open(soundfile, SFM_READ, &inFile_Inf);
@@ -22,6 +22,12 @@ void playSoundFile(const char* soundfile, const char* audioApi){
     std::vector<float> inputBuffer_Interleaved;
     DevInfo devInf;
     try{
+		inFile = sf_open(soundfile, SFM_READ, &inFile_Inf);
+		if(inFile == nullptr) throw sndFileStd_Exception();
+		numChans = inFile_Inf.channels;
+		blockSize = 0;
+		interleavedBufferSize = 0;
+
         if(numChans == 1 && strcmp(audioApi, "portaudio_jack") == 0){
             numChans = 2;
             blockSize = FRAMES_PER_BUFFER * numChans;

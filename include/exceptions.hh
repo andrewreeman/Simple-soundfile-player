@@ -38,6 +38,11 @@ class sndFile_Exception : public std::exception{
         virtual const char* what() const throw () { return "Libsndfile exception"; }
 };
 
+class sndFileStd_Exception : public sndFile_Exception{
+	public:
+        virtual const char* what() const throw () { return "Libsndfile exception: error opening soundfile"; }
+};
+
 class Factory_AudioIOException : public std::exception{
     public:
        virtual const char* what() const throw() { return "Factory AudioIO exception"; }
