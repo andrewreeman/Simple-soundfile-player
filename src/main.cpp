@@ -56,7 +56,7 @@ int main(int argc, char** argv)
         }
         if( fileExists(filePath) ){
             audioInOutApi = selectApi(0);
-            playSoundFile(filePath.c_str(), "portaudio_default");
+            playSoundFile(filePath.c_str(), "portaudio_jack");
             return 0;
         }
         else{

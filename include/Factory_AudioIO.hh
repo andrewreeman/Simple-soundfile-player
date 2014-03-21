@@ -19,23 +19,14 @@ using namespace AudioInOut;
 
 typedef AudioIO* (Factory_AudioIO::* t_ConstructAudioIO_Func)(int chans, int sRate, int frameSize, int deviceIndex, const char* programName);
 
+class Worker_AudioIO;
+
 class Factory_AudioIO {
     private:
         static AudioIO* m_CreatedAudioIO;
-        std::map<AudioIOType, t_ConstructAudioIO_Func> m_ConstructorList;
+        std::map<AudioIOType, Worker_AudioIO*> m_ConstructorList;
 
         AudioIO* makePaDefault(int chans, int sRate, int frameSize, int deviceIndex, const char* programName);
-    #ifdef __linux__
-        AudioIO* makePaJack(int, int, int, int, const char*);
-        AudioIO* makePaAlsa(int, int, int, int, const char*);
-    #endif
-    #if defined(_WIN32) || defined(__CYGWIN__)
-        AudioIO* makePaAsio(int, int, int, int, const char*);
-        AudioIO* makePaDs(int, int, int, int, const char*);
-        AudioIO* makePaMME(int, int, int, int, const char*);
-    #endif
-
-        void test(int, int, int, int, const char*);
 
     public:
         Factory_AudioIO();
@@ -44,6 +35,44 @@ class Factory_AudioIO {
         ~Factory_AudioIO(); // Also calls destroyAudioIO().
 
 };
+
+class Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info) = 0;
+};
+
+class Worker_PaDefault : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+#ifdef __linux__
+class Worker_PaAlsa : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+
+class Worker_PaJack : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+#endif
+#if defined(_WIN32) || defined(__CYGWIN__)
+class Worker_PaAsio : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+
+class Worker_PaDs : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+
+class Worker_PaWmme : public Worker_AudioIO{
+    public:
+        virtual AudioIO* makeAudioIO(AudioIO_Info);
+};
+#endif
+
 
 
 #endif // FACTORY_AUDIOIO_HH
