@@ -144,8 +144,9 @@ AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRat
         inf.chans = chans;
         inf.sampleRate = sRate;
         inf.frames = frameSize;
-        inf.deviceIndex = deviceIndex;
-        m_CreatedAudioIO = (m_ConstructorList[AudioIOType::PA_JACK])->makeAudioIO(inf);
+        inf.deviceIndex = 0;
+        TODO: AudioIOType from argument after being checked for correctness. Next: do checks
+        m_CreatedAudioIO = (m_ConstructorList[AudioIOType::PA_DEFAULT])->makeAudioIO(inf);
         return m_CreatedAudioIO;
     }
     catch(...){

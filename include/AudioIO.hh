@@ -110,7 +110,7 @@ class PA_AudioIO : public AudioIO{
         PaDeviceIndex m_DevInd;
 
     public:
-        PA_AudioIO(int chans, int sRate, int frameSize, AudioIOType type, PaDeviceIndex index) : AudioIO(chans, sRate, frameSize, type){}
+        PA_AudioIO(int chans, int sRate, int frameSize, AudioIOType type, PaDeviceIndex index) : AudioIO(chans, sRate, frameSize, type), m_DevInd(index){}
         ~PA_AudioIO();
         virtual void initialise();
         virtual void terminate();
@@ -194,7 +194,7 @@ class PA_AudioIO_WMME : public PA_AudioIO{
     public:
         PA_AudioIO_WMME(int chans, int sRate, int frameSize, int deviceIndex) : PA_AudioIO(chans, sRate, frameSize, AudioIOType::PA_WMME, deviceIndex){}
         ~PA_AudioIO_WMME(){ std::cout << "DESTORYING PA WMME" << std::endl; }
-    protected::
+    protected:
         virtual PaDeviceIndex setDevice(int deviceIndex);
 
 };
