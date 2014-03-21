@@ -17,14 +17,28 @@
 
 using namespace AudioInOut;
 
-typedef AudioIO* (*t_ConstructAudioIO_Func)(std::string, int, int, int, int, const char*);
+typedef AudioIO* (Factory_AudioIO::* t_ConstructAudioIO_Func)(int chans, int sRate, int frameSize, int deviceIndex, const char* programName);
 
 class Factory_AudioIO {
     private:
         static AudioIO* m_CreatedAudioIO;
         std::map<AudioIOType, t_ConstructAudioIO_Func> m_ConstructorList;
+
+        AudioIO* makePaDefault(int chans, int sRate, int frameSize, int deviceIndex, const char* programName);
+    #ifdef __linux__
+        AudioIO* makePaJack(int, int, int, int, const char*);
+        AudioIO* makePaAlsa(int, int, int, int, const char*);
+    #endif
+    #if defined(_WIN32) || defined(__CYGWIN__)
+        AudioIO* makePaAsio(int, int, int, int, const char*);
+        AudioIO* makePaDs(int, int, int, int, const char*);
+        AudioIO* makePaMME(int, int, int, int, const char*);
+    #endif
+
+        void test(int, int, int, int, const char*);
+
     public:
-        Factory_AudioIO(){}
+        Factory_AudioIO();
         AudioIO* createAudioIO(std::string audioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName = "portaudio");
         void destroyAudioIO();
         ~Factory_AudioIO(); // Also calls destroyAudioIO().

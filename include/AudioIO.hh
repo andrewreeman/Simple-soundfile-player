@@ -50,8 +50,6 @@ struct ApiInfo{
     std::vector<DevInfo> devicess;
 };
 
-
-
 enum class AudioIOType{
     PA_DEFAULT, PA_ALSA, PA_JACK, PA_ASIO, PA_DS, PA_WMME
 };
