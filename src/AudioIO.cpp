@@ -1,13 +1,16 @@
 #include "../include/AudioIO.hh"
+#include <cstring>
+
 
 namespace AudioInOut{
-
+	
+		
 std::vector<ApiInfo> getHostApis(){
-    Pa_Initialize();
+	
+    if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'getHostApis'.");
     PaHostApiIndex apiCount = Pa_GetHostApiCount();
     PaDeviceIndex devCount = 0;
     PaDeviceIndex devNum = 0;
-    std::vector<std::string> devs;
     std::vector<DevInfo> devInf;
     const PaHostApiInfo* p_ApiInf;
     const PaDeviceInfo* p_DevInf;
@@ -18,22 +21,39 @@ std::vector<ApiInfo> getHostApis(){
         p_ApiInf = Pa_GetHostApiInfo(api);
         vApiInf[api].apiName = p_ApiInf->name;
         devCount = p_ApiInf->deviceCount;
-        devs.resize(devCount);
         devInf.resize(devCount);
         for(int dev=0; dev<devCount; ++dev){
 
             devNum = Pa_HostApiDeviceIndexToDeviceIndex(api, dev);
             p_DevInf = Pa_GetDeviceInfo(devNum);
-            devs[dev] = p_DevInf->name;
             devInf[dev].devName = p_DevInf->name;
             devInf[dev].numInputs = p_DevInf->maxInputChannels;
             devInf[dev].numOutputs= p_DevInf->maxOutputChannels;
-            vApiInf[api].devicess = devInf;
-            vApiInf[api].devices = devs;
-        }
+            vApiInf[api].devices = devInf;
+		}
     }
-    Pa_Terminate();
+    if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'getHostApis'.");
     return vApiInf;
+}
+
+AudioIOType stringToAudioIOType(std::string apiString){
+	std::map<std::string, AudioIOType> conversionTable;
+	const PaHostApiInfo* hostApiInf;
+	
+	if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'stringToAudioIOType'.");
+	
+	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paALSA) );
+	conversionTable[ "ALSA" ] = AudioIOType::PA_ALSA;
+		ERROR HERE
+	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paJACK) );
+	conversionTable[hostApiInf->name] = AudioIOType::PA_JACK;
+	
+	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paOSS) );
+	conversionTable[hostApiInf->name] = AudioIOType::PA_OSS;
+	
+	if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'stringToAudioIOType'.");		
+	
+	return conversionTable.at( apiString );
 }
 
 PA_AudioIO::~PA_AudioIO(){

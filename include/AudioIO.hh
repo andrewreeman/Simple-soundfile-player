@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 #include "portaudio.h"
 
 #ifdef __linux__
@@ -29,6 +30,7 @@
 
 #include "exceptions.hh"
 #include "ioUtils.hh"
+#include <map>
 
 
 #define PA_SAMPLE_TYPE  paFloat32
@@ -39,8 +41,11 @@ class Factory_AudioIO;
 namespace AudioInOut{
 
 enum class AudioIOType{
-    PA_DEFAULT, PA_ALSA, PA_JACK, PA_ASIO, PA_DS, PA_WMME
+    PA_DEFAULT, PA_ALSA, PA_JACK, PA_OSS, PA_ASIO, PA_DS, PA_WMME
 };
+
+
+
 
 struct DevInfo{
     std::string devName;
@@ -50,8 +55,7 @@ struct DevInfo{
 
 struct ApiInfo{
     std::string apiName;
-    std::vector<std::string> devices;
-    std::vector<DevInfo> devicess;
+	std::vector<DevInfo> devices;
 };
 
 struct AudioIO_Info{
@@ -63,6 +67,7 @@ struct AudioIO_Info{
 };
 
 std::vector<ApiInfo> getHostApis();
+AudioIOType stringToAudioIOType(std::string apiString);
 
 class AudioIO{
 
@@ -77,8 +82,8 @@ class AudioIO{
         virtual ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
         virtual void initialise() = 0;
         virtual void terminate() = 0;
-
-    public:
+		
+	public:
         AudioIOType getAudioIOType(){ return m_audioIOType; }
 //        virtual std::vector<ApiInfo> getHostApis()const{ return m_vApiInf; }
         virtual DevInfo getDevInfo() = 0;
@@ -100,7 +105,10 @@ class AudioIO{
 
         virtual void enableRealTimeScheduling(bool enable){ std::cout << "Real time scheduling not enabled by default." << std::endl; }
         virtual bool isRealTime(){ return 0; }
-};
+        
+	
+	
+	};
 
 class PA_AudioIO : public AudioIO{
 
@@ -126,7 +134,9 @@ class PA_AudioIO : public AudioIO{
         virtual const char* getApi();
     protected:
         virtual void Pa_ErrorOccurred(PaError err);
-        virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
+		virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
+		
+		
 };
 
 class PA_AudioIO_Default : public PA_AudioIO{

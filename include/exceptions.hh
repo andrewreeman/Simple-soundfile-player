@@ -59,5 +59,5 @@ class F_InstanceAlreadyExistsException : public Factory_AudioIOException{
         virtual const char* what() const throw() {return "Factory AudioIO exception: An instance of an AudioIO object already exists."; }
 };
 
-
+	
 #endif

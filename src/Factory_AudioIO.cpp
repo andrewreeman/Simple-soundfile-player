@@ -120,7 +120,7 @@ Factory_AudioIO::Factory_AudioIO(){
 */
 }
 
-AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
+AudioIO* Factory_AudioIO::createAudioIO(AudioIOType AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
     try{
 /*        if(AudioIO == "portaudio_default") m_CreatedAudioIO = new PA_AudioIO_Default(chans, sRate, frameSize, deviceIndex);
@@ -145,8 +145,8 @@ AudioIO* Factory_AudioIO::createAudioIO(std::string AudioIO, int chans, int sRat
         inf.sampleRate = sRate;
         inf.frames = frameSize;
         inf.deviceIndex = 0;
-        TODO: AudioIOType from argument after being checked for correctness. Next: do checks
-        m_CreatedAudioIO = (m_ConstructorList[AudioIOType::PA_DEFAULT])->makeAudioIO(inf);
+//        TODO: AudioIOType from argument after being checked for correctness. Next: do checks
+        m_CreatedAudioIO = (m_ConstructorList[AudioIO])->makeAudioIO(inf);
         return m_CreatedAudioIO;
     }
     catch(...){

@@ -38,8 +38,8 @@ class isNotOutputDevice: public SoundFile_Exception{
 
 
 
-void playSoundFile(const char* soundfile, const char* audioApi = "portaudio_default");
-
+void playSoundFile(const char* soundfile, AudioIOType audioIO = AudioIOType::PA_DEFAULT);
+    
 void playSine();
 
 #endif

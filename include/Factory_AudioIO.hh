@@ -30,7 +30,7 @@ class Factory_AudioIO {
 
     public:
         Factory_AudioIO();
-        AudioIO* createAudioIO(std::string audioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName = "portaudio");
+        AudioIO* createAudioIO(AudioIOType audioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName = "portaudio");
         void destroyAudioIO();
         ~Factory_AudioIO(); // Also calls destroyAudioIO().
 
