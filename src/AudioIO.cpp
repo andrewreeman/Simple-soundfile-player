@@ -3,10 +3,10 @@
 
 
 namespace AudioInOut{
-	
-		
+
+
 std::vector<ApiInfo> getHostApis(){
-	
+
     if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'getHostApis'.");
     PaHostApiIndex apiCount = Pa_GetHostApiCount();
     PaDeviceIndex devCount = 0;
@@ -36,24 +36,32 @@ std::vector<ApiInfo> getHostApis(){
     return vApiInf;
 }
 
-AudioIOType stringToAudioIOType(std::string apiString){
-	std::map<std::string, AudioIOType> conversionTable;
-	const PaHostApiInfo* hostApiInf;
-	
-	if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'stringToAudioIOType'.");
-	
-	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paALSA) );
-	conversionTable[ "ALSA" ] = AudioIOType::PA_ALSA;
-		ERROR HERE
-	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paJACK) );
-	conversionTable[hostApiInf->name] = AudioIOType::PA_JACK;
-	
-	hostApiInf = Pa_GetHostApiInfo( Pa_HostApiTypeIdToHostApiIndex(paOSS) );
-	conversionTable[hostApiInf->name] = AudioIOType::PA_OSS;
-	
-	if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'stringToAudioIOType'.");		
-	
-	return conversionTable.at( apiString );
+std::map<int, AudioIOType> initPaType_To_AudioIO_Map(){
+    std::map<int, AudioIOType> v_map;
+    v_map[paDirectSound] = AudioIOType::PA_DS;
+    v_map[paMME] = AudioIOType::PA_WMME;
+    v_map[paALSA] = AudioIOType::PA_ALSA;
+    v_map[paASIO] = AudioIOType::PA_ASIO;
+    v_map[paJACK] = AudioIOType::PA_JACK;
+    v_map[paOSS] = AudioIOType::PA_OSS;
+    return v_map;
+}
+
+AudioIOType intToAudioIOType(int api){
+    const PaHostApiInfo* hostApiInf = NULL;
+    std::map<int, AudioIOType> v_map = initPaType_To_AudioIO_Map();
+    PaHostApiTypeId type;
+
+    if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'intToAudioIOType'.");
+    hostApiInf = Pa_GetHostApiInfo(api);
+    if(hostApiInf == NULL){
+        if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'intToAudioIOType'.");
+        throw std::runtime_error("An error occurred during Pa_GetHostApiInfo in 'intToAudioIOType'.");
+     }
+    type = hostApiInf->type;
+    if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'intToAudioIOType'.");
+    return v_map[type];
+
 }
 
 PA_AudioIO::~PA_AudioIO(){

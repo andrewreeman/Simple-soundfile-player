@@ -51,13 +51,12 @@ int main(int argc, char** argv)
         AudioIOType audioInOutApi;
 
         argParse(argc, argv, &filePath, &isDisplayDriversOn, &audioInOutApi);
-		filePath = "test.wav";
         if(isDisplayDriversOn){
             displayDrivers();
             return 0;
         }
         if( fileExists(filePath) ){
-				playSoundFile(filePath.c_str(), AudioIOType::PA_DEFAULT);
+	    playSoundFile(filePath.c_str(), audioInOutApi);
             return 0;
         }
         else{
@@ -95,7 +94,7 @@ int main(int argc, char** argv)
 void displayDrivers(){
 	std::vector<ApiInfo> v_apiInfo = AudioInOut::getHostApis();
 	std::vector<DevInfo> apiDevices;
-	
+
     for(unsigned api=0; api<v_apiInfo.size(); ++api){
         std::cout << "Api " << api << " : " << v_apiInfo[api].apiName << std::endl;
 		apiDevices = v_apiInfo[api].devices;
@@ -120,16 +119,16 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 	TCLAP::UnlabeledValueArg<std::string> filePathArg("name", "The path to the audio file.", true, "", "string");
 	TCLAP::SwitchArg dispDrivArg("D", "DisplayDriver", "Displays drivers and exits.", false);
 	TCLAP::ValueArg<int> apiArg("a", "api", "The api to use.", false, 0, "positive integer");
-	
+
 
 	cmd.xorAdd(filePathArg, dispDrivArg);
 	cmd.add(apiArg);
 	cmd.parse(argc, argv);
-	
+
 	*filePath = filePathArg.getValue();
 	*isDisplayDriverOn = dispDrivArg.getValue();
 	try{
-		*api = intToAudio_IO_Type( apiArg.getValue() );
+		*api = intToAudioIOType( apiArg.getValue() );
 	}
 	catch(std::exception& error){
 			std::cerr << "Api argument error: " << error.what() << " \n Using default api instead." << std::endl;
@@ -137,23 +136,16 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 	}
 }
 
-AudioIOType intToAudio_IO_Type(int api)
-{	
-	std::vector<ApiInfo> v_ApiInf;
-	std::string apiString;
-	std::vector<DevInfo> v_ApiDevices;;
-	
-	if(api < 0) throw std::runtime_error("Api value must be positive.");
-	v_ApiInf = AudioInOut::getHostApis();
-	if(api > v_ApiInf.size()) throw std::runtime_error("Api value does not match an available api.");
-	v_ApiDevices = v_ApiInf[api].devices;
-	if(v_ApiDevices.size() == 0) throw std::runtime_error("Api has no devices.");
-	
-	apiString = v_ApiInf[api].apiName;
-	
-	std::cout << "API STRING IS: " << apiString << std::endl;	
-	return AudioInOut::stringToAudioIOType(apiString);		
-	  
+AudioIOType intToAudioIOType(int api)
+{
+    std::vector<ApiInfo> v_ApiInf;
+    std::vector<DevInfo> v_ApiDevices;
+    if(api < 0) throw std::runtime_error("Api value must be positive.");
+    v_ApiInf = AudioInOut::getHostApis();
+    if(api > v_ApiInf.size()) throw std::runtime_error("Api value does not match an available api.");
+    v_ApiDevices = v_ApiInf[api].devices;
+    if(v_ApiDevices.size() == 0) throw std::runtime_error("Api has no devices.");
+    return AudioInOut::intToAudioIOType(api);
 }
 
 

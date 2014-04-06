@@ -41,11 +41,8 @@ class Factory_AudioIO;
 namespace AudioInOut{
 
 enum class AudioIOType{
-    PA_DEFAULT, PA_ALSA, PA_JACK, PA_OSS, PA_ASIO, PA_DS, PA_WMME
+    PA_DEFAULT, PA_ALSA, PA_JACK, PA_OSS, PA_ASIO, PA_DS, PA_WMME, PA_MAX_TYPES
 };
-
-
-
 
 struct DevInfo{
     std::string devName;
@@ -68,6 +65,7 @@ struct AudioIO_Info{
 
 std::vector<ApiInfo> getHostApis();
 AudioIOType stringToAudioIOType(std::string apiString);
+AudioIOType intToAudioIOType(int api);
 
 class AudioIO{
 
@@ -82,7 +80,7 @@ class AudioIO{
         virtual ~AudioIO(){ std::cout << "AUDIOIO DESTROYED" << std::endl; }
         virtual void initialise() = 0;
         virtual void terminate() = 0;
-		
+
 	public:
         AudioIOType getAudioIOType(){ return m_audioIOType; }
 //        virtual std::vector<ApiInfo> getHostApis()const{ return m_vApiInf; }
@@ -105,9 +103,9 @@ class AudioIO{
 
         virtual void enableRealTimeScheduling(bool enable){ std::cout << "Real time scheduling not enabled by default." << std::endl; }
         virtual bool isRealTime(){ return 0; }
-        
-	
-	
+
+
+
 	};
 
 class PA_AudioIO : public AudioIO{
@@ -135,8 +133,8 @@ class PA_AudioIO : public AudioIO{
     protected:
         virtual void Pa_ErrorOccurred(PaError err);
 		virtual PaDeviceIndex setDevice(int deviceIndex) = 0;
-		
-		
+
+
 };
 
 class PA_AudioIO_Default : public PA_AudioIO{
