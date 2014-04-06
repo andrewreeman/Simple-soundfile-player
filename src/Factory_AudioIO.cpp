@@ -123,29 +123,11 @@ Factory_AudioIO::Factory_AudioIO(){
 AudioIO* Factory_AudioIO::createAudioIO(AudioIOType AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
     try{
-/*        if(AudioIO == "portaudio_default") m_CreatedAudioIO = new PA_AudioIO_Default(chans, sRate, frameSize, deviceIndex);
-#ifdef __linux__
-        else if(AudioIO == "portaudio_jack"){
-            m_CreatedAudioIO = new PA_AudioIO_JACK(chans, sRate, frameSize, deviceIndex);
-            dynamic_cast<PA_AudioIO_JACK*>(m_CreatedAudioIO)->setJackClientName(programName);
-        }
-        else if(AudioIO == "portaudio_alsa") m_CreatedAudioIO = new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
-#endif
-#if defined(_WIN32) || defined(__CYGWIN__)
-        else if(AudioIO == "portaudio_asio") m_CreatedAudioIO = new PA_AudioIO_ASIO(chans, sRate, frameSize, deviceIndex);
-        else if(AudioIO == "portaudio_ds") m_CreatedAudioIO = new PA_AudioIO_DS(chans, sRate, frameSize, deviceIndex);
-        else if(AudioIO == "portaudio_mme") m_CreatedAudioIO = new PA_AudioIO_WMME(chans, sRate, frameSize, deviceIndex);
-#endif
-        else throw F_NotValidDeviceNameException();
-        m_CreatedAudioIO->initialise();
-        return m_CreatedAudioIO;
-*/
         AudioIO_Info inf;
         inf.chans = chans;
         inf.sampleRate = sRate;
         inf.frames = frameSize;
-        inf.deviceIndex = 0;
-//        TODO: AudioIOType from argument after being checked for correctness. Next: do checks
+        inf.deviceIndex = deviceIndex;
         m_CreatedAudioIO = (m_ConstructorList[AudioIO])->makeAudioIO(inf);
         return m_CreatedAudioIO;
     }

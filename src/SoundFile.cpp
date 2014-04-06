@@ -6,7 +6,7 @@ void isOutputDevice(DevInfo devInf){
     if(devInf.numOutputs == 0) throw isNotOutputDevice();
 }
 
-void playSoundFile(const char* soundfile, AudioIOType audioApi){
+void playSoundFile(const char* soundfile, AudioIOType audioApi, int deviceNumber){
 
     /* Uses sndfile to open a sound file and read into a buffer.
     Then uses portaudio to play this file.
@@ -45,7 +45,7 @@ void playSoundFile(const char* soundfile, AudioIOType audioApi){
             sf_readf_float(inFile, inputBuffer_Interleaved.data(), interleavedBufferSize);
         }
 
-        outputDevice = factoryAudioIO.createAudioIO(audioApi, numChans, inFile_Inf.samplerate, FRAMES_PER_BUFFER, 0, soundfile);
+        outputDevice = factoryAudioIO.createAudioIO(audioApi, numChans, inFile_Inf.samplerate, FRAMES_PER_BUFFER, deviceNumber, soundfile);
         devInf = outputDevice->getDevInfo();
         outputDevice->start();
 
@@ -74,7 +74,7 @@ void playSine(){
     std::vector<float> inputBuffer_Interleaved(interleavedBufferSize);
     AudioIO* outputDevice;
     Factory_AudioIO factoryAudioIO;
-    outputDevice= factoryAudioIO.createAudioIO(AudioIOType::PA_DEFAULT, numChans, sampleRate, FRAMES_PER_BUFFER, 0, "Sine");
+    outputDevice= factoryAudioIO.createAudioIO(AudioIOType::PA_DEFAULT, numChans, sampleRate, FRAMES_PER_BUFFER, -1, "Sine");
 
 
 

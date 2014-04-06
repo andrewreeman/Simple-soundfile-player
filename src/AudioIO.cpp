@@ -197,6 +197,8 @@ PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
 
     apiInf = Pa_GetHostApiInfo(jackInd);
     if(!apiInf) throw Pa_NoApiException();
+    if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
+
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
@@ -216,6 +218,7 @@ PaDeviceIndex PA_AudioIO_ASIO::setDevice(int deviceIndex){
 
     apiInf = Pa_GetHostApiInfo(asioInd);
     if(!apiInf) throw Pa_NoApiException();
+    if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
@@ -230,6 +233,7 @@ PaDeviceIndex PA_AudioIO_DS::setDevice(int deviceIndex){
 
     apiInf = Pa_GetHostApiInfo(dsInd);
     if(!apiInf) throw Pa_NoApiException();
+    if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
@@ -243,9 +247,11 @@ PaDeviceIndex PA_AudioIO_WMME::setDevice(int deviceIndex){
 
     apiInf = Pa_GetHostApiInfo(mmeInd);
     if(!apiInf) throw Pa_NoApiException();
+    if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
+    std::cout << "Device index is: " << deviceIndex << std::endl;
     return Pa_HostApiDeviceIndexToDeviceIndex(mmeInd, deviceIndex); // how do I find the first output device ?
 }
 
