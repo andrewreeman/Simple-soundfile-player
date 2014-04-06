@@ -163,7 +163,7 @@ DevInfo PA_AudioIO::getDevInfo(){
 }
 
 PaDeviceIndex PA_AudioIO_Default::setDevice(int deviceIndex){
-    return Pa_GetDefaultOutputDevice();
+  return Pa_GetDefaultOutputDevice();
 }
 
 #ifdef __linux__
@@ -183,6 +183,8 @@ void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
 PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
     PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paALSA);
     const PaHostApiInfo* apiInf = Pa_GetHostApiInfo(alsaInd);
+    if(!apiInf) throw Pa_NoApiException();
+    if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
 
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();

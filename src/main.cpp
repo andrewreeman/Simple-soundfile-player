@@ -27,13 +27,16 @@ The AudioIO class is used as a wrapper for PortAudio leaving it possible to chan
 
 #define PI 3.14159265
 
+#define DEFAULT_OUTPUT_DEVICE -1
+#define DEFAULT_API -1
+
 const char* PROGRAM_NAME = "Simple Soundfile Player";
 
 void displayDrivers();
 
 bool fileExists(std::string filePath);
 void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDriversOn, AudioIOType* api, int* dev);
-AudioIOType intToAudio_IO_Type(int api);
+AudioInOut::AudioIOType intToAudioIOType(int api);
 int devCheckValidity(int api, int dev);
 
 int main(int argc, char** argv)
@@ -49,15 +52,14 @@ int main(int argc, char** argv)
         //
         // verifyApiDevice(op1, op2)
         //playSoundFile("file", op1, op2)
-
-        argParse(argc, argv, &filePath, &isDisplayDriversOn, &audioInOutApi, &deviceNumber);
-        if(isDisplayDriversOn){
+	argParse(argc, argv, &filePath, &isDisplayDriversOn, &audioInOutApi, &deviceNumber);
+	if(isDisplayDriversOn){
             displayDrivers();
             return 0;
         }
         if( fileExists(filePath) ){
 	    playSoundFile(filePath.c_str(), audioInOutApi, deviceNumber);
-            return 0;
+	    return 0;
         }
         else{
             std::cerr << "Error: " << filePath << " is not a valid file path." << std::endl;
@@ -118,8 +120,8 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 	TCLAP::CmdLine cmd("Test for argument parsing", ' ', "1.0");
 	TCLAP::UnlabeledValueArg<std::string> filePathArg("name", "The path to the audio file.", true, "", "string");
 	TCLAP::SwitchArg dispDrivArg("D", "DisplayDriver", "Displays drivers and exits.", false);
-	TCLAP::ValueArg<int> apiArg("a", "api", "The api to use.", false, 0, "integer");
-	TCLAP::ValueArg<int> devArg("d", "dev", "The device to use.", false, -1, "integer");
+	TCLAP::ValueArg<int> apiArg("a", "api", "The api to use.", false, DEFAULT_API, "integer");
+	TCLAP::ValueArg<int> devArg("d", "dev", "The device to use.", false, DEFAULT_OUTPUT_DEVICE, "integer");
 
 	cmd.xorAdd(filePathArg, dispDrivArg);
 	cmd.add(apiArg);
@@ -129,9 +131,8 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 	*filePath = filePathArg.getValue();
 	*isDisplayDriverOn = dispDrivArg.getValue();
 	try{
-		*api = intToAudioIOType( apiArg.getValue() );
-		*deviceNumber = devCheckValidity( apiArg.getValue(), devArg.getValue() );
-
+	  *api = ::intToAudioIOType( apiArg.getValue() );
+	  *deviceNumber = devCheckValidity( apiArg.getValue(), devArg.getValue() );
 	}
 	catch(std::exception& error){
 			std::cerr << "Api argument error: " << error.what() << " \n Using default api instead." << std::endl;
@@ -140,8 +141,9 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 
 }
 
-AudioIOType intToAudioIOType(int api)
+AudioInOut::AudioIOType intToAudioIOType(int api)
 {
+    if(DEFAULT_API == api) return AudioInOut::AudioIOType::PA_DEFAULT;
     std::vector<ApiInfo> v_ApiInf;
     std::vector<DevInfo> v_ApiDevices;
     if(api < 0) throw std::runtime_error("Api value must be positive or zero.");
@@ -153,17 +155,18 @@ AudioIOType intToAudioIOType(int api)
 }
 
 int devCheckValidity(int api, int dev){
+    if(dev == DEFAULT_OUTPUT_DEVICE) return DEFAULT_OUTPUT_DEVICE;
     if(dev < 0){
-        std::cerr << "Device number must be positive or zero." << std::endl;
-        return -1;
+        std::cerr << "Device number must be positive, zero or -1 (default device). Using default device." << std::endl;
+        return DEFAULT_OUTPUT_DEVICE;
     }
     std::vector<ApiInfo> v_ApiInf;
     std::vector<DevInfo> v_ApiDevices;
     v_ApiInf = AudioInOut::getHostApis();
     v_ApiDevices = v_ApiInf[api].devices;
     if( dev > v_ApiDevices.size() ){
-        std::cerr << "Device number is above the number of devices." << std::endl;
-        return -1;
+        std::cerr << "Device number is above the number of devices. Using default device." << std::endl;
+        return DEFAULT_OUTPUT_DEVICE;
     }
     return dev;
 }
