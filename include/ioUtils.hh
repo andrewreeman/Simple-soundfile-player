@@ -10,7 +10,6 @@
     #include <cassert>
 #endif
 
-
 #include <vector>
 #include <iostream>
 

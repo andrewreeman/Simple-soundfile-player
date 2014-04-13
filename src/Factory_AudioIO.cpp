@@ -4,7 +4,7 @@
 
 using namespace AudioInOut;
 
-
+// implement the makeAudioIO for the Worker classes
 AudioIO* Worker_PaDefault::makeAudioIO(AudioIO_Info aio_inf){
     AudioIO* p_aio = new PA_AudioIO_Default(aio_inf.chans, aio_inf.sampleRate, aio_inf.frames, aio_inf.deviceIndex);
     p_aio->initialise();
@@ -16,14 +16,12 @@ AudioIO* Worker_PaAlsa::makeAudioIO(AudioIO_Info aio_inf){
     p_aio->initialise();
     return p_aio;
 }
-
 AudioIO* Worker_PaJack::makeAudioIO(AudioIO_Info aio_inf){
     AudioIO* p_aio = new PA_AudioIO_JACK(aio_inf.chans, aio_inf.sampleRate, aio_inf.frames, aio_inf.deviceIndex);
     p_aio->initialise();
     return p_aio;
 }
 #endif
-
 #if defined(_WIN32) || defined(__CYGWIN__)
 AudioIO* Worker_PaAsio::makeAudioIO(AudioIO_Info aio_inf){
     AudioIO* p_aio = new PA_AudioIO_ASIO(aio_inf.chans, aio_inf.sampleRate, aio_inf.frames, aio_inf.deviceIndex);
@@ -44,46 +42,10 @@ AudioIO* Worker_PaWmme::makeAudioIO(AudioIO_Info aio_inf){
 }
 #endif
 
-
-AudioIO* Factory_AudioIO::m_CreatedAudioIO = 0;
-
-/*
-AudioIO* Factory_AudioIO::makePaDefault(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    return new PA_AudioIO_Default(chans, sRate, frameSize, deviceIndex);
-}
-
-#ifdef __linux__
-AudioIO* Factory_AudioIO::makePaAlsa(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    return new PA_AudioIO_ALSA(chans, sRate, frameSize, deviceIndex);
-}
-
-AudioIO* Factory_AudioIO::makePaJack(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    AudioIO* p_AudioIO = new PA_AudioIO_JACK(chans, sRate, frameSize, deviceIndex);
-    dynamic_cast<PA_AudioIO_JACK*>(p_AudioIO)->setJackClientName(programName);
-    return p_AudioIO;
-}
-#endif
-
-#if defined(_WIN32) || defined(__CYGWIN__)
-AudioIO* Factory_AudioIO::makePaAsio(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    return new PA_AudioIO_ASIO(chans, sRate, frameSize, deviceIndex);
-}
-
-AudioIO* Factory_AudioIO::makePaDs(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    return new PA_AudioIO_DS(chans, sRate, frameSize, deviceIndex);
-}
-
-AudioIO* Factory_AudioIO::makePaMME(int chans, int sRate, int frameSize, int deviceIndex, const char *programName){
-    return new PA_AudioIO_WMME(chans, sRate, frameSize, deviceIndex);
-}
-#endif
-
-*/
-
-
-//USE A CONSTRUCTAUDIOIO FUNCTION THAT WILL SELECT THE CORRECT CONSTRUCTOR. AND A POPULATE CONSTRUCTOR LIST TOADD CONSTRUCTORS TO
+AudioIO* Factory_AudioIO::m_CreatedAudioIO = 0; // how many audioIO's are active? At the moment this mechanism works with only 1 being allowed existence
 
 Factory_AudioIO::Factory_AudioIO(){
+    // Fill the constructor list. This will select the correct Worker to create the correct AudioIO object
     m_ConstructorList[AudioIOType::PA_DEFAULT] = new Worker_PaDefault();
 #ifdef __linux__
     m_ConstructorList[AudioIOType::PA_ALSA] = new Worker_PaAlsa();
@@ -93,31 +55,7 @@ Factory_AudioIO::Factory_AudioIO(){
     m_ConstructorList[AudioIOType::PA_ASIO] = new Worker_PaAsio();
     m_ConstructorList[AudioIOType::PA_DS] = new Worker_PaDs();
     m_ConstructorList[AudioIOType::PA_WMME] = new Worker_PaWmme();
-
 #endif
-
-/*
-#ifdef __linux__
-    m_ConstructorList.insert(
-        std::pair<AudioIOType, t_ConstructAudioIO_Func>(AudioIOType::PA_ALSA, &Factory_AudioIO::makePaAlsa)
-    );
-    m_ConstructorList.insert(
-        std::pair<AudioIOType, t_ConstructAudioIO_Func>(AudioIOType::PA_JACK, &Factory_AudioIO::makePaJack)
-    );
-#endif
-#if defined(_WIN32) || defined(__CYGWIN__)
-    m_ConstructorList.insert(
-        std::pair<AudioIOType, t_ConstructAudioIO_Func>(AudioIOType::PA_ASIO, &Factory_AudioIO::makePaAsio)
-    );
-    m_ConstructorList.insert(
-        std::pair<AudioIOType, t_ConstructAudioIO_Func>(AudioIOType::PA_DS, &Factory_AudioIO::makePaDs)
-    );
-    m_ConstructorList.insert(
-        std::pair<AudioIOType, t_ConstructAudioIO_Func>(AudioIOType::PA_MME, &Factory_AudioIO::makePaMME)
-    );
-
-#endif
-*/
 }
 
 AudioIO* Factory_AudioIO::createAudioIO(AudioIOType AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
@@ -156,8 +94,3 @@ Factory_AudioIO::~Factory_AudioIO(){
     }
     destroyAudioIO();
 }
-
-
-
-
-

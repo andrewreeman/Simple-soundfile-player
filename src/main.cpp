@@ -45,28 +45,20 @@ int main(int argc, char** argv)
     bool isDisplayDriversOn;
     AudioIOType audioInOutApi;
     int deviceNumber;
-
     try{
-        // if(display drivers) displayDrivers and exit
-        // if(ops) api = op1, device = op2
-        //
-        // verifyApiDevice(op1, op2)
-        //playSoundFile("file", op1, op2)
-	argParse(argc, argv, &filePath, &isDisplayDriversOn, &audioInOutApi, &deviceNumber);
-	if(isDisplayDriversOn){
+        argParse(argc, argv, &filePath, &isDisplayDriversOn, &audioInOutApi, &deviceNumber);
+        if(isDisplayDriversOn){
             displayDrivers();
             return 0;
         }
         if( fileExists(filePath) ){
-	    playSoundFile(filePath.c_str(), audioInOutApi, deviceNumber);
-	    return 0;
+            playSoundFile(filePath.c_str(), audioInOutApi, deviceNumber);
+            return 0;
         }
         else{
             std::cerr << "Error: " << filePath << " is not a valid file path." << std::endl;
             return 1;
         }
-
-        //playSine();
         return 0;
     }
     catch(Pa_Exception& paEx){
@@ -104,7 +96,6 @@ void displayDrivers(){
             std::cout << "\t Device " << dev << " : " << apiDevices[dev].devName << std::endl;
             std::cout << "\t \t Max inputs: " << apiDevices[dev].numInputs << std::endl;
             std::cout << "\t \t Max outputs: " << apiDevices[dev].numOutputs << std::endl;
-
         }
     }
 }
@@ -114,7 +105,6 @@ bool fileExists(std::string filePath){
 	if(!file) return false;
 	return true;
 }
-
 
 void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDriverOn, AudioIOType* api, int* deviceNumber){
 	TCLAP::CmdLine cmd("Test for argument parsing", ' ', "1.0");
@@ -138,11 +128,9 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 			std::cerr << "Api argument error: " << error.what() << " \n Using default api instead." << std::endl;
 			*api = AudioIOType::PA_DEFAULT;
 	}
-
 }
 
-AudioInOut::AudioIOType intToAudioIOType(int api)
-{
+AudioInOut::AudioIOType intToAudioIOType(int api){
     if(DEFAULT_API == api) return AudioInOut::AudioIOType::PA_DEFAULT;
     std::vector<ApiInfo> v_ApiInf;
     std::vector<DevInfo> v_ApiDevices;
@@ -155,6 +143,7 @@ AudioInOut::AudioIOType intToAudioIOType(int api)
 }
 
 int devCheckValidity(int api, int dev){
+    // Checks if the device number is valid
     if(dev == DEFAULT_OUTPUT_DEVICE) return DEFAULT_OUTPUT_DEVICE;
     if(dev < 0){
         std::cerr << "Device number must be positive, zero or -1 (default device). Using default device." << std::endl;
@@ -170,5 +159,3 @@ int devCheckValidity(int api, int dev){
     }
     return dev;
 }
-
-

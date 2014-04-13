@@ -15,7 +15,6 @@ class Pa_Exception : public std::exception{
 class Pa_NoDeviceException : public Pa_Exception{
     public:
         virtual const char* what() const throw() { return "Portaudio exception: Could not open audio device."; }
-
 };
 
 class Pa_StreamException : public Pa_Exception{
@@ -59,5 +58,4 @@ class F_InstanceAlreadyExistsException : public Factory_AudioIOException{
         virtual const char* what() const throw() {return "Factory AudioIO exception: An instance of an AudioIO object already exists."; }
 };
 
-	
 #endif

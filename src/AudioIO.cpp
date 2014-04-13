@@ -1,20 +1,18 @@
 #include "../include/AudioIO.hh"
 #include <cstring>
 
-
 namespace AudioInOut{
 
-
 std::vector<ApiInfo> getHostApis(){
-
+    // Returns information about available host apis. Currently uses portaudio.
     if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'getHostApis'.");
+
     PaHostApiIndex apiCount = Pa_GetHostApiCount();
     PaDeviceIndex devCount = 0;
     PaDeviceIndex devNum = 0;
     std::vector<DevInfo> devInf;
     const PaHostApiInfo* p_ApiInf;
     const PaDeviceInfo* p_DevInf;
-
     std::vector<ApiInfo> vApiInf(apiCount);
 
     for(int api=0; api<apiCount; ++api){
@@ -23,7 +21,6 @@ std::vector<ApiInfo> getHostApis(){
         devCount = p_ApiInf->deviceCount;
         devInf.resize(devCount);
         for(int dev=0; dev<devCount; ++dev){
-
             devNum = Pa_HostApiDeviceIndexToDeviceIndex(api, dev);
             p_DevInf = Pa_GetDeviceInfo(devNum);
             devInf[dev].devName = p_DevInf->name;
@@ -36,7 +33,8 @@ std::vector<ApiInfo> getHostApis(){
     return vApiInf;
 }
 
-std::map<int, AudioIOType> initPaType_To_AudioIO_Map(){
+std::map<int, AudioIOType> init_PaType_To_AudioIO_Map(){
+    // For int to AudioIOType conversion
     std::map<int, AudioIOType> v_map;
     v_map[paDirectSound] = AudioIOType::PA_DS;
     v_map[paMME] = AudioIOType::PA_WMME;
@@ -49,7 +47,7 @@ std::map<int, AudioIOType> initPaType_To_AudioIO_Map(){
 
 AudioIOType intToAudioIOType(int api){
     const PaHostApiInfo* hostApiInf = NULL;
-    std::map<int, AudioIOType> v_map = initPaType_To_AudioIO_Map();
+    std::map<int, AudioIOType> v_map = init_PaType_To_AudioIO_Map();
     PaHostApiTypeId type;
 
     if( Pa_Initialize() != paNoError ) throw std::runtime_error("Portaudio could not be initialized during 'intToAudioIOType'.");
@@ -61,13 +59,11 @@ AudioIOType intToAudioIOType(int api){
     type = hostApiInf->type;
     if( Pa_Terminate() != paNoError ) throw std::runtime_error("Error terminating portaudio during 'intToAudioIOType'.");
     return v_map[type];
-
 }
 
 PA_AudioIO::~PA_AudioIO(){
     if( Pa_IsStreamActive(m_Stream) ) Pa_StopStream(m_Stream);
     Pa_Terminate();
-    std::cout << "HOWDY WORLD" << std::endl;
 }
 
 void PA_AudioIO::initialise(){
@@ -75,14 +71,11 @@ void PA_AudioIO::initialise(){
         Pa_Initialize();
         m_PaParams.device = setDevice(m_DevInd); //Pa_GetDefaultOutputDevice();
         if(m_PaParams.device == paNoDevice) throw Pa_NoDeviceException();
-
-
         m_PaParams.channelCount = m_numChans;
         m_PaParams.sampleFormat = PA_SAMPLE_TYPE;
         m_PaParams.suggestedLatency = Pa_GetDeviceInfo( m_PaParams.device )->defaultLowOutputLatency;
         m_PaParams.hostApiSpecificStreamInfo = NULL; // Takes a void pointer. Can be used for passing other data to stream.
 
-        // Open the stream. Ready for starting
         PaError err = Pa_OpenStream(&m_Stream, NULL, &m_PaParams, m_sampleRate,
                   m_frameSize, paClipOff, NULL, NULL );
         if(err != paNoError)
@@ -179,17 +172,16 @@ void PA_AudioIO_ALSA::enableRealTimeScheduling(bool enable){
     }
 }
 
-
 PaDeviceIndex PA_AudioIO_ALSA::setDevice(int deviceIndex = 0){
     PaHostApiIndex alsaInd = Pa_HostApiTypeIdToHostApiIndex(paALSA);
     const PaHostApiInfo* apiInf = Pa_GetHostApiInfo(alsaInd);
+
     if(!apiInf) throw Pa_NoApiException();
     if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
 
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
-
     return Pa_HostApiDeviceIndexToDeviceIndex(alsaInd, deviceIndex);
 }
 
@@ -200,11 +192,9 @@ PaDeviceIndex PA_AudioIO_JACK::setDevice(int deviceIndex){
     apiInf = Pa_GetHostApiInfo(jackInd);
     if(!apiInf) throw Pa_NoApiException();
     if(-1 == deviceIndex) return apiInf->defaultOutputDevice;
-
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
-
     return Pa_HostApiDeviceIndexToDeviceIndex(jackInd, deviceIndex);
 }
 
@@ -224,7 +214,6 @@ PaDeviceIndex PA_AudioIO_ASIO::setDevice(int deviceIndex){
     if(deviceIndex > apiInf->deviceCount ||  deviceIndex < 0){
         throw Pa_DeviceIndexNotFoundException();
     }
-
     std::cout << "Warning: ASIO blocking is currently unimplemented in portaudio." << std::endl;
     return Pa_HostApiDeviceIndexToDeviceIndex(asioInd, deviceIndex);
 }
@@ -240,7 +229,6 @@ PaDeviceIndex PA_AudioIO_DS::setDevice(int deviceIndex){
         throw Pa_DeviceIndexNotFoundException();
     }
     return Pa_HostApiDeviceIndexToDeviceIndex(dsInd, deviceIndex);
-
 }
 
 PaDeviceIndex PA_AudioIO_WMME::setDevice(int deviceIndex){
@@ -254,9 +242,8 @@ PaDeviceIndex PA_AudioIO_WMME::setDevice(int deviceIndex){
         throw Pa_DeviceIndexNotFoundException();
     }
     std::cout << "Device index is: " << deviceIndex << std::endl;
-    return Pa_HostApiDeviceIndexToDeviceIndex(mmeInd, deviceIndex); // how do I find the first output device ?
+    return Pa_HostApiDeviceIndexToDeviceIndex(mmeInd, deviceIndex);
 }
-
 
 #endif
 
