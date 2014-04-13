@@ -1,11 +1,3 @@
-/*
-Uses the AudioIO class to pass input buffers to PortAudio.
-The AudioIO class is used as a wrapper for PortAudio leaving it possible to change to a different library/device.
-
-*/
-
-/* Select sample format. */
-/* useful to typedef the sample incase we change it in the future */
 
 #include <sndfile.h>
 #include <stdio.h>
@@ -131,14 +123,15 @@ void argParse(int argc, char** argv, std::string* filePath, bool* isDisplayDrive
 }
 
 AudioInOut::AudioIOType intToAudioIOType(int api){
+
     if(DEFAULT_API == api) return AudioInOut::AudioIOType::PA_DEFAULT;
     std::vector<ApiInfo> v_ApiInf;
     std::vector<DevInfo> v_ApiDevices;
     if(api < 0) throw std::runtime_error("Api value must be positive or zero.");
     v_ApiInf = AudioInOut::getHostApis();
-    if(api > v_ApiInf.size()) throw std::runtime_error("Api value does not match an available api.");
+    if( api > (signed int)v_ApiInf.size() ) throw std::runtime_error("Api value does not match an available api.");
     v_ApiDevices = v_ApiInf[api].devices;
-    if(v_ApiDevices.size() == 0) throw std::runtime_error("Api has no devices.");
+    if( (signed int)v_ApiDevices.size() == 0 ) throw std::runtime_error("Api has no devices.");
     return AudioInOut::intToAudioIOType(api);
 }
 
@@ -153,7 +146,7 @@ int devCheckValidity(int api, int dev){
     std::vector<DevInfo> v_ApiDevices;
     v_ApiInf = AudioInOut::getHostApis();
     v_ApiDevices = v_ApiInf[api].devices;
-    if( dev > v_ApiDevices.size() ){
+    if( dev > (signed int)v_ApiDevices.size() ){
         std::cerr << "Device number is above the number of devices. Using default device." << std::endl;
         return DEFAULT_OUTPUT_DEVICE;
     }

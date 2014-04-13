@@ -1,6 +1,6 @@
 SYS := $(shell uname)
 CC=g++
-CFLAGS = -Wall -std=c++0x #-Werror 
+CFLAGS = -Wall -std=c++0x -Werror 
 OBJDIR = src
 SOURCES = $(addprefix $(OBJDIR)/, main.cpp AudioIO.cpp ioUtils.cpp SoundFile.cpp Factory_AudioIO.cpp)
 OBJECTS = $(addprefix $(OBJDIR)/, main.o AudioIO.o ioUtils.o SoundFile.o Factory_AudioIO.o)
