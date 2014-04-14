@@ -36,6 +36,7 @@ class Factory_AudioIO {
 class Worker_AudioIO{
     public:
         virtual AudioIO* makeAudioIO(AudioIO_Info) = 0;
+        virtual ~Worker_AudioIO(){}
 };
 
 class Worker_PaDefault : public Worker_AudioIO{

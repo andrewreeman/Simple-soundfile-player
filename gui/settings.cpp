@@ -17,7 +17,8 @@ Settings::Settings(QWidget *parent) :
     ui->driverCombo->clear();
     ui->deviceCombo->clear();
     for(unsigned int i=0; i<apiInf.size(); ++i){
-        ui->driverCombo->addItem( apiInf[i].apiName.c_str() );
+        if(apiInf[i].devices.size() != 0)
+            ui->driverCombo->addItem( apiInf[i].apiName.c_str(), QVariant(i) );
     }
     ui->driverCombo->setCurrentIndex( mainWindow->getDriverIndex() );
     devInf = apiInf[ ui->driverCombo->currentIndex() ].devices;
@@ -31,8 +32,10 @@ Settings::~Settings()
 
 void Settings::on_OK_clicked()
 {
-    int driver = ui->driverCombo->currentIndex();
-    int device = ui->deviceCombo->currentIndex();
+    int driverIndex = ui->driverCombo->currentIndex();
+    int driver = ui->driverCombo->itemData(driverIndex).toInt();
+    int deviceIndex = ui->deviceCombo->currentIndex();
+    int device = ui->deviceCombo->itemData(deviceIndex).toInt();
 
     if(device != -1){
         ( (MainWindow*)parent() )->setDriverIndex(driver);
@@ -52,7 +55,8 @@ void Settings::on_driverCombo_currentIndexChanged(int index)
     ui->deviceCombo->clear();
     if(devInf.size() > 0){
         for(unsigned int i=0; i<devInf.size(); ++i){
-            ui->deviceCombo->addItem( devInf[i].devName.c_str() );
+            if(devInf[i].numOutputs != 0)
+                ui->deviceCombo->addItem( devInf[i].devName.c_str(), QVariant(i) );
         }
     }
 }
