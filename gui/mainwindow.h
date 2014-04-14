@@ -27,6 +27,11 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    void setDriverIndex(int driver);
+    void setDeviceIndex(int device);
+
+
     
 private slots:
     // A slot is basically a subscriber. A signal is a publisher.
@@ -37,6 +42,9 @@ private slots:
     void on_actionSettings_triggered();
 
 private:
+
+    int apiIndex;
+    int deviceIndex;
     Ui::MainWindow *ui;
 
     QString m_filePath;

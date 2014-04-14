@@ -46,6 +46,7 @@ std::map<int, AudioIOType> init_PaType_To_AudioIO_Map(){
 }
 
 AudioIOType intToAudioIOType(int api){
+    if(api == -1) return AudioIOType::PA_DEFAULT;
     const PaHostApiInfo* hostApiInf = NULL;
     std::map<int, AudioIOType> v_map = init_PaType_To_AudioIO_Map();
     PaHostApiTypeId type;

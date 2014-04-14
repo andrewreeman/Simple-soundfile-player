@@ -3,7 +3,7 @@
 #include "settings.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+    QMainWindow(parent), apiIndex(0), deviceIndex(0),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -14,10 +14,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setDeviceIndex(int device){
+    deviceIndex = device;
+}
+
+void MainWindow::setDriverIndex(int driver){
+    apiIndex = driver;
+}
+
 void MainWindow::on_pushButton_clicked()
 {
     // Eventually to a C string!
-    playSoundFile(m_filePath.toStdString().c_str());
+    AudioInOut::AudioIOType api = AudioInOut::intToAudioIOType(apiIndex - 1);
+    playSoundFile(m_filePath.toStdString().c_str(), api, deviceIndex-1);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -40,6 +49,7 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionSettings_triggered(){
     Settings settings;
     settings.setModal(true);
+    settings.setParent(this);
     settings.exec();
 }
 

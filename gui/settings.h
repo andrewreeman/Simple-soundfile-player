@@ -17,6 +17,9 @@ public:
 
 private:
     Ui::Settings *ui;
+
+private slots:
+    void on_OK_clicked();
 };
 
 #endif // SETTINGS_H
