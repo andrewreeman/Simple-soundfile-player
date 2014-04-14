@@ -29,7 +29,11 @@ public:
     ~MainWindow();
 
     void setDriverIndex(int driver);
+    int getDriverIndex(){ return apiIndex;}
     void setDeviceIndex(int device);
+    int getDeviceIndex(){ return deviceIndex;}
+
+
 
 
     

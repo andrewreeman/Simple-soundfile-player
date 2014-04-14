@@ -16,17 +16,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::setDeviceIndex(int device){
     deviceIndex = device;
+    std::cout << "device index is: " << deviceIndex << std::endl;
+    std::cout << "driver index is: " << apiIndex << std::endl;
+
 }
 
 void MainWindow::setDriverIndex(int driver){
     apiIndex = driver;
+    std::cout << "device index is: " << deviceIndex << std::endl;
+    std::cout << "driver index is: " << apiIndex << std::endl;
 }
+
+
 
 void MainWindow::on_pushButton_clicked()
 {
-    // Eventually to a C string!
-    AudioInOut::AudioIOType api = AudioInOut::intToAudioIOType(apiIndex - 1);
-    playSoundFile(m_filePath.toStdString().c_str(), api, deviceIndex-1);
+
+    AudioInOut::AudioIOType api = AudioInOut::intToAudioIOType(apiIndex);
+    std::cout << "Selected api is " << apiIndex <<  "\n and the device index is " << deviceIndex << std::endl;
+    playSoundFile(m_filePath.toStdString().c_str(), api, deviceIndex);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -47,9 +55,8 @@ void MainWindow::on_actionOpen_triggered()
 }
 
 void MainWindow::on_actionSettings_triggered(){
-    Settings settings;
+    Settings settings(this);
     settings.setModal(true);
-    settings.setParent(this);
     settings.exec();
 }
 

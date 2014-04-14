@@ -20,6 +20,7 @@ private:
 
 private slots:
     void on_OK_clicked();
+    void on_driverCombo_currentIndexChanged(int index);
 };
 
 #endif // SETTINGS_H

@@ -69,7 +69,7 @@
     <string>Device:</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -100,7 +100,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>220</x>
@@ -132,16 +132,16 @@
   <connection>
    <sender>Cancel</sender>
    <signal>clicked()</signal>
-   <receiver>Cancel</receiver>
+   <receiver>Settings</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>344</x>
-     <y>283</y>
+     <x>342</x>
+     <y>280</y>
     </hint>
     <hint type="destinationlabel">
-     <x>344</x>
-     <y>283</y>
+     <x>310</x>
+     <y>204</y>
     </hint>
    </hints>
   </connection>
