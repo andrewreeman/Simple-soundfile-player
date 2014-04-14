@@ -58,7 +58,7 @@ Factory_AudioIO::Factory_AudioIO(){
 #endif
 }
 
-AudioIO* Factory_AudioIO::createAudioIO(AudioIOType AudioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName){
+AudioIO* Factory_AudioIO::createAudioIO(AudioIOType AudioIO, int chans, int sRate, int frameSize, int deviceIndex){
     if(m_CreatedAudioIO) throw F_InstanceAlreadyExistsException();
     try{
         AudioIO_Info inf;

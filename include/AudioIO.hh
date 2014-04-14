@@ -98,7 +98,7 @@ class AudioIO{
         virtual void start() = 0;
         virtual void stop() = 0;
 
-        virtual void enableRealTimeScheduling(bool enable){ std::cout << "Real time scheduling not enabled by default." << std::endl; }
+        virtual void enableRealTimeScheduling(bool enable){ std::cout << "Enable status: " << enable << " ignored. Real time scheduling not enabled by default." << std::endl; }
         virtual bool isRealTime(){ return 0; }
 };
 
@@ -117,7 +117,7 @@ class PA_AudioIO : public AudioIO{
         DevInfo getDevInfo();
 
         virtual void write(SAMPLE *input);
-        virtual void read(SAMPLE *output){}
+        virtual void read(SAMPLE *output){ std::cout << "AudioIO::read(SAMPLE *output) is undefined. " << "Value: " << *output << " ignored. " << std::endl; }
 
         virtual void start();
         virtual void stop();

@@ -156,6 +156,7 @@ DevInfo PA_AudioIO::getDevInfo(){
 }
 
 PaDeviceIndex PA_AudioIO_Default::setDevice(int deviceIndex){
+  std::cout << "Device index " << deviceIndex << " not used as this is a PA_DEFAULT object. Using default device." << std::endl;
   return Pa_GetDefaultOutputDevice();
 }
 

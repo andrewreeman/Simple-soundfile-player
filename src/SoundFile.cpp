@@ -38,7 +38,7 @@ void playSoundFile(const char* soundfile, AudioIOType audioApi, int deviceNumber
             inputBuffer_Interleaved.resize(interleavedBufferSize + blockSize); // add one block so we don't go over
             sf_readf_float(inFile, inputBuffer_Interleaved.data(), interleavedBufferSize);
         }
-        outputDevice = factoryAudioIO.createAudioIO(audioApi, numChans, inFile_Inf.samplerate, FRAMES_PER_BUFFER, deviceNumber, soundfile);
+        outputDevice = factoryAudioIO.createAudioIO(audioApi, numChans, inFile_Inf.samplerate, FRAMES_PER_BUFFER, deviceNumber);
         devInf = outputDevice->getDevInfo();
         outputDevice->start();
         for(int i=0; i<interleavedBufferSize; i+= blockSize )
@@ -62,9 +62,9 @@ void playSine(){
     std::vector<float> inputBuffer_Interleaved(interleavedBufferSize);
     AudioIO* outputDevice;
     Factory_AudioIO factoryAudioIO;
-    outputDevice= factoryAudioIO.createAudioIO(AudioIOType::PA_DEFAULT, numChans, sampleRate, FRAMES_PER_BUFFER, -1, "Sine");
+    outputDevice= factoryAudioIO.createAudioIO(AudioIOType::PA_DEFAULT, numChans, sampleRate, FRAMES_PER_BUFFER, -1);
 
-    for(int buffInd, i=0; buffInd<numSamps; ++i, buffInd+=numChans){
+    for(int buffInd=0, i=0; buffInd<numSamps; ++i, buffInd+=numChans){
         for(int chan=0; chan<numChans; ++chan){
             inputBuffer_Interleaved[buffInd+chan] = sin(440.f * TWO_PI * (float)i / sampleRate ) * 0.8;
         }

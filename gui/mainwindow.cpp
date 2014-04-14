@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "settings.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,6 +34,15 @@ void MainWindow::on_actionOpen_triggered()
     // expand this
     dialog.setNameFilter(filter);
     if(dialog.exec())
-        m_filePath = (dialog.selectedFiles()).at(0);
-
+        m_filePath = (dialog.selectedFiles()).at(0); // first selected file
 }
+
+void MainWindow::on_actionSettings_triggered(){
+    Settings settings;
+    settings.setModal(true);
+    settings.exec();
+}
+
+
+
+

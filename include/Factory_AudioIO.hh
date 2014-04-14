@@ -28,7 +28,7 @@ class Factory_AudioIO {
 	AudioIO* makePaDefault(int chans, int sRate, int frameSize, int deviceIndex, const char* programName);
     public:
         Factory_AudioIO();
-        AudioIO* createAudioIO(AudioIOType audioIO, int chans, int sRate, int frameSize, int deviceIndex, const char* programName = "portaudio");
+        AudioIO* createAudioIO(AudioIOType audioIO, int chans, int sRate, int frameSize, int deviceIndex);
         void destroyAudioIO();
         ~Factory_AudioIO(); // Also calls destroyAudioIO().
 };

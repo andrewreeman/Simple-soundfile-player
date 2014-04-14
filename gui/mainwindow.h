@@ -15,7 +15,7 @@
 #include <QDir>
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 class MainWindow : public QMainWindow
@@ -33,6 +33,8 @@ private slots:
     void on_pushButton_clicked();
 
     void on_actionOpen_triggered();
+
+    void on_actionSettings_triggered();
 
 private:
     Ui::MainWindow *ui;
