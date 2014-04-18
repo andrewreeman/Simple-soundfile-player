@@ -100,22 +100,26 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>220</x>
      <y>270</y>
-     <width>168</width>
-     <height>25</height>
+     <width>170</width>
+     <height>27</height>
     </rect>
    </property>
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="2">
-     <widget class="QPushButton" name="Cancel">
-      <property name="text">
-       <string>Cancel</string>
-      </property>
-     </widget>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="Cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="OK">

@@ -33,10 +33,6 @@ public:
     void setDeviceIndex(int device);
     int getDeviceIndex(){ return deviceIndex;}
 
-
-
-
-    
 private slots:
     // A slot is basically a subscriber. A signal is a publisher.
     void on_pushButton_clicked();
@@ -51,8 +47,11 @@ private:
     int deviceIndex;
     Ui::MainWindow *ui;
 
+    QString m_lastDirectory;
     QString m_filePath;
 
+    void readSettings();
+    void writeSettings();
 };
 
 #endif // MAINWINDOW_H

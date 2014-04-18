@@ -18,8 +18,12 @@ AudioIO* Worker_PaAlsa::makeAudioIO(AudioIO_Info aio_inf){
 }
 AudioIO* Worker_PaJack::makeAudioIO(AudioIO_Info aio_inf){
     AudioIO* p_aio = new PA_AudioIO_JACK(aio_inf.chans, aio_inf.sampleRate, aio_inf.frames, aio_inf.deviceIndex);
+//#ifdef QAPPLICATION_H
+  //  PA_AudioIO_JACK.setJackClientName(QCoreApplication::applicationName() );
+//#endif
     p_aio->initialise();
     return p_aio;
+
 }
 #endif
 #if defined(_WIN32) || defined(__CYGWIN__)

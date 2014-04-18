@@ -1,3 +1,5 @@
+#include <QSettings>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "settings.h"
@@ -7,12 +9,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    readSettings();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::readSettings(){
+    QSettings settings("AReeman", "Simple Soundfile Player");
+    m_lastDirectory = settings.value("lastDir", QDir::currentPath()).toString();
+}
+
+void MainWindow::writeSettings(){
+    QSettings settings("AReeman", "Simple Soundfile Player");
+    settings.setValue("lastDir", m_lastDirectory);
+}
+
 
 void MainWindow::setDeviceIndex(int device){
     deviceIndex = device;
@@ -43,8 +57,9 @@ void MainWindow::on_actionOpen_triggered()
         "Audio (*.aiff *.au *.avr *.caf *.flac *.htk *.iff *.mat *.mpc *.oga *.paf *.pvf *.rf64 *.sf *.voc *.w64 *.wav *.wavex *.wve *xi) "
     );
     QFileDialog dialog(this); // who the daddy?
+
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
-    dialog.setDirectory(QDir::currentPath());
+    dialog.setDirectory(m_lastDirectory);
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setViewMode(QFileDialog::Detail);
 
@@ -52,6 +67,9 @@ void MainWindow::on_actionOpen_triggered()
     dialog.setNameFilter(filter);
     if(dialog.exec())
         m_filePath = (dialog.selectedFiles()).at(0); // first selected file
+        m_lastDirectory = QFileInfo(m_filePath).absoluteDir().absolutePath();
+        writeSettings();
+
 }
 
 void MainWindow::on_actionSettings_triggered(){
