@@ -32,6 +32,8 @@ public:
     int getDriverIndex(){ return apiIndex;}
     void setDeviceIndex(int device);
     int getDeviceIndex(){ return deviceIndex;}
+    //void keyPressEvent ( QKeyEvent * event );
+    //void keyReleaseEvent ( QKeyEvent * event );
 
 private slots:
     // A slot is basically a subscriber. A signal is a publisher.

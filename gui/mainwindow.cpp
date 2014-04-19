@@ -79,5 +79,13 @@ void MainWindow::on_actionSettings_triggered(){
 }
 
 
+/*void MainWindow::keyPressEvent ( QKeyEvent * event )
+{
+qDebug("Came here,,,, Key Pressed");
+}
 
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+qDebug("Came here,,,, Key Released");
+} */
 
