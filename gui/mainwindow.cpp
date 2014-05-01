@@ -4,6 +4,7 @@
 #include "ui_mainwindow.h"
 #include "settings.h"
 #include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), apiIndex(0), deviceIndex(0),
@@ -52,6 +53,15 @@ void MainWindow::setDriverIndex(int driver){
 
 void MainWindow::on_pushButton_clicked()
 {
+    if(m_filePath == ""){
+        QMessageBox::critical(this, "Error", "No file selected.");
+        return;
+    }
+    QDir dir;
+    if(!dir.exists(m_filePath)){
+        QMessageBox::critical(this, "Error", "File: '" + m_filePath + "' does not exist.");
+        return;
+    }
     m_player->m_api = apiIndex;
     m_player->m_device = deviceIndex;
     m_player->m_filePath = m_filePath;
@@ -86,15 +96,3 @@ void MainWindow::on_actionSettings_triggered(){
     settings.setModal(true);
     settings.exec();
 }
-
-
-/*void MainWindow::keyPressEvent ( QKeyEvent * event )
-{
-qDebug("Came here,,,, Key Pressed");
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent *event)
-{
-qDebug("Came here,,,, Key Released");
-} */
-
