@@ -36,6 +36,21 @@ class isNotOutputDevice: public SoundFile_Exception{
         virtual const char* what() const throw() { return "Device is not an output device."; }
 };
 
+class SoundFilePlayer{
+    private:
+        bool m_doStop;
+        std::string m_File;
+    public:
+        SoundFilePlayer() : m_doStop(false), m_File(""){}
+        SoundFilePlayer(std::string file) : m_doStop(false), m_File(file){}
+        SoundFilePlayer(const char* file) : m_doStop(false), m_File(file){}
+        ~SoundFilePlayer(){}
+
+        void stop(){ m_doStop = true;}
+        void playSoundFile(const char* soundfile, AudioIOType audioIO = AudioIOType::PA_DEFAULT, int deviceNumber = -1);
+};
+
+
 void playSoundFile(const char* soundfile, AudioIOType audioIO = AudioIOType::PA_DEFAULT, int deviceNumber = -1);
 
 void playSine();

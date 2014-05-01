@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     ../src/ioUtils.cpp \
     ../src/AudioIO.cpp \
     ../src/Factory_AudioIO.cpp \
-    settings.cpp
+    settings.cpp \
+    sf_player.cpp
 
 HEADERS  += mainwindow.h \
     ../include/SoundFile.hh \
@@ -31,7 +32,8 @@ HEADERS  += mainwindow.h \
     ../include/sndfile.h \
     ../include/sndfile.hh \
     ../include/Factory_AudioIO.hh \
-    settings.h
+    settings.h \
+    sf_player.h
 
 FORMS    += mainwindow.ui \
     settings.ui

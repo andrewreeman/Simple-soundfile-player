@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QDir>
+#include <QThread>
+#include "sf_player.h"
 
 namespace Ui {
     class MainWindow;
@@ -32,7 +34,8 @@ public:
     int getDriverIndex(){ return apiIndex;}
     void setDeviceIndex(int device);
     int getDeviceIndex(){ return deviceIndex;}
-    //void keyPressEvent ( QKeyEvent * event );
+
+     //void keyPressEvent ( QKeyEvent * event );
     //void keyReleaseEvent ( QKeyEvent * event );
 
 private slots:
@@ -54,6 +57,10 @@ private:
 
     void readSettings();
     void writeSettings();
+
+    QThread* m_audioThread;
+    SF_Player* m_player;
+
 };
 
 #endif // MAINWINDOW_H

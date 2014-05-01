@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "settings.h"
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), apiIndex(0), deviceIndex(0),
@@ -10,11 +11,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     readSettings();
+    m_player = new SF_Player();
+    m_audioThread = new QThread();
+    m_player->moveToThread(m_audioThread);
+    connect(m_audioThread, SIGNAL(started()), m_player, SLOT(play()));
+    //connect(m_player, SIGNAL(finished()), m_audioThread, SLOT(quit()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    m_audioThread->quit();
+    m_audioThread->wait();
+    delete m_player;
+    delete m_audioThread;
 }
 
 void MainWindow::readSettings(){
@@ -26,7 +36,6 @@ void MainWindow::writeSettings(){
     QSettings settings("AReeman", "Simple Soundfile Player");
     settings.setValue("lastDir", m_lastDirectory);
 }
-
 
 void MainWindow::setDeviceIndex(int device){
     deviceIndex = device;
@@ -41,14 +50,14 @@ void MainWindow::setDriverIndex(int driver){
     std::cout << "driver index is: " << apiIndex << std::endl;
 }
 
-
-
 void MainWindow::on_pushButton_clicked()
 {
-
-    AudioInOut::AudioIOType api = AudioInOut::intToAudioIOType(apiIndex);
-    std::cout << "Selected api is " << apiIndex <<  "\n and the device index is " << deviceIndex << std::endl;
-    playSoundFile(m_filePath.toStdString().c_str(), api, deviceIndex);
+    m_player->m_api = apiIndex;
+    m_player->m_device = deviceIndex;
+    m_player->m_filePath = m_filePath;
+    m_audioThread->quit();
+    m_audioThread->wait();
+    m_audioThread->start();
 }
 
 void MainWindow::on_actionOpen_triggered()
