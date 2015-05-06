@@ -13,6 +13,9 @@ CONFIG += c++11
 TARGET = simpleSF_Player
 TEMPLATE = app
 
+CONFIG += mobility
+#MOBILITY =
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
